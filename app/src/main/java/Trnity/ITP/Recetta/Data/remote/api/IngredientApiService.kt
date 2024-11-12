@@ -9,6 +9,6 @@ interface IngredientApiService {
     @GET("ingredient/{id}")
     suspend fun getIngredient(@Path("id") id: String): Ingredient
 
-    @GET("api/ingrediant")
+    @GET("ingrediant")
     suspend fun getAllIngredients(): List<Ingredient>
 }

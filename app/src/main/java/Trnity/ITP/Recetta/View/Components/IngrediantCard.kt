@@ -1,6 +1,7 @@
 package Trnity.ITP.Recetta.View.Components
 
 import Trnity.ITP.Recetta.Model.entities.Ingredient
+import Trnity.ITP.Recetta.Model.entities.IngredientInventory
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
@@ -28,9 +29,9 @@ import java.util.Locale
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun IngrediantCard(ingrediant: Ingredient) {
+fun IngrediantCard(ingrediant: IngredientInventory) {
 
-    val directImageUrl = ingrediant.image.replace("https://drive.google.com/file/d/", "https://drive.google.com/uc?export=download&id=")
+    val directImageUrl = ingrediant.ingrediant.image.replace("https://drive.google.com/file/d/", "https://drive.google.com/uc?export=download&id=")
         .replace("/view?usp=drive_link", "")
     val quantitie : Int = 17
     Row(modifier = Modifier
@@ -51,7 +52,7 @@ fun IngrediantCard(ingrediant: Ingredient) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                 ) {
-                Text(ingrediant.name ,style = MaterialTheme.typography.titleMedium )
+                Text(ingrediant.ingrediant.name ,style = MaterialTheme.typography.titleMedium )
                 Text(text = " items :"+ quantitie,style = MaterialTheme.typography.bodySmall )
             }
             Spacer(Modifier.height(20.dp))

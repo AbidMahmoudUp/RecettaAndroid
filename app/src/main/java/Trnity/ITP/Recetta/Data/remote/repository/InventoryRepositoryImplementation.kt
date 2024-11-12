@@ -9,7 +9,7 @@ class InventoryRepositoryImplementation(private  val inventoryApiService : Inven
         return inventoryApiService.getInventory(id)
     }
 
-    override   suspend fun getAllInventory(): List<Inventory> {
-        return inventoryApiService.getAllInventory()
-    }
+    //override   suspend fun getAllInventory(): List<Inventory> {
+      //  return inventoryApiService.getAllInventory()
+    //}
 }

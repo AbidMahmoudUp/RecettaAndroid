@@ -2,14 +2,17 @@ package Trnity.ITP.Recetta.di
 
 import Trnity.ITP.Recetta.Data.remote.api.ApiClient
 import Trnity.ITP.Recetta.Data.remote.api.IngredientApiService
+import Trnity.ITP.Recetta.Data.remote.api.InventoryApiService
 import Trnity.ITP.Recetta.Data.remote.api.PlatApiService
 import Trnity.ITP.Recetta.Data.remote.api.RecipeApiService
 import Trnity.ITP.Recetta.Data.remote.api.UserApiService
 import Trnity.ITP.Recetta.Data.remote.repository.IngredientRepositoryImplementation
+import Trnity.ITP.Recetta.Data.remote.repository.InventoryRepositoryImplementation
 import Trnity.ITP.Recetta.Data.remote.repository.PlatRepositoryImplementation
 import Trnity.ITP.Recetta.Data.remote.repository.RecipeRepositoryImplementation
 import Trnity.ITP.Recetta.Data.remote.repository.UserRepositoryImplementation
 import Trnity.ITP.Recetta.Model.repositories.IngredientRepository
+import Trnity.ITP.Recetta.Model.repositories.InventoryRepository
 import Trnity.ITP.Recetta.Model.repositories.PlatRepository
 import Trnity.ITP.Recetta.Model.repositories.RecipeRepository
 import Trnity.ITP.Recetta.Model.repositories.UserRepository
@@ -79,4 +82,14 @@ object AppModule {
     @Singleton
     fun providePlatRepository(apiService: PlatApiService): PlatRepository =
         PlatRepositoryImplementation(apiService)
+
+    @Provides
+    @Singleton
+    fun provideInventoryRepository(apiService: InventoryApiService): InventoryRepository =
+        InventoryRepositoryImplementation(apiService)
+
+    @Provides
+    @Singleton
+    fun provideInventoryApiService(): InventoryApiService =
+        ApiClient.create(InventoryApiService::class.java)
 }

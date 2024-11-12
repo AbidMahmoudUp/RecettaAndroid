@@ -6,5 +6,7 @@ import java.time.LocalDateTime
 data class Ingredient (
     val name : String,
     val image : String,
-    //val categorie :String,
+
+    //val imageTest : Int,
+    val categorie :String,
     )

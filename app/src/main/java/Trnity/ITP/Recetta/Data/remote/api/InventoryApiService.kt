@@ -10,6 +10,6 @@ interface InventoryApiService {
     @GET("inventory/{id}")
     suspend fun getInventory(@Path("id") id: String): Inventory
 
-    @GET("Plat/all")
-    suspend fun getAllInventory(): List<Inventory>
+    //@GET("Plat/all")
+    //suspend fun getAllInventory(): List<Inventory>
 }

@@ -1,6 +1,7 @@
 package Trnity.ITP.Recetta.View.Components
 
 import HomeScreen
+import Trnity.ITP.Recetta.Model.entities.Recipe
 import Trnity.ITP.Recetta.View.AddIngridiant
 import Trnity.ITP.Recetta.View.Components.Items.HomeCardItem
 import Trnity.ITP.Recetta.View.Components.Items.NavItem
@@ -78,7 +79,7 @@ fun MainNavigation(navController: NavHostController) {
             arguments = listOf(navArgument("jsonRecipe") { type = NavType.StringType })
         ) { backStackEntry ->
             backStackEntry.arguments?.getString("jsonRecipe")?.let { json ->
-                val recipe = Gson().fromJson(json, HomeCardItem::class.java)
+                val recipe = Gson().fromJson(json, Recipe::class.java)
                 RecipeScreen( recipe = recipe)
             }
         }

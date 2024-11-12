@@ -3,6 +3,7 @@ package Trnity.ITP.Recetta.View
 import Trnity.ITP.Recetta.R
 import Trnity.ITP.Recetta.View.Components.IngrediantCard
 import Trnity.ITP.Recetta.ViewModel.IngrediantViewModel
+import Trnity.ITP.Recetta.ViewModel.InventoryViewModel
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
@@ -31,12 +32,12 @@ import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 @Composable
 fun InventoryScreen(
     navController: NavController,
-    viewModel: IngrediantViewModel = hiltViewModel() // Inject viewModel with Hilt
+    viewModel: InventoryViewModel = hiltViewModel() // Inject viewModel with Hilt
 ) {
     val isLoading by viewModel.isLoading.collectAsState()
     val swipeRefreshState = rememberSwipeRefreshState(isRefreshing = isLoading)
-    val ingredients = viewModel.ingredients.collectAsState().value // Collect ingredients state
-    println("the ingrediants are :"+ ingredients)
+    val inventory = viewModel.inventory.collectAsState().value // Collect ingredients state
+    println("the ingrediants are :"+ inventory)
 
     Column(modifier = Modifier.padding(16.dp)) {
         // Top bar with navigation and title
@@ -64,7 +65,7 @@ fun InventoryScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(text = "Ingredients (${ingredients.size})")
+            Text(text = "Ingredients (${inventory.ingrediants.size})")
             Text(
                 text = "+ Add item",
                 color = Color(0xFFF46D42),
@@ -75,10 +76,10 @@ fun InventoryScreen(
         }
 
         // Display ingredients or "No ingredients" message
-        if (ingredients.isEmpty()) {
+        if (inventory.ingrediants.isEmpty()) {
             Text("No ingredients available")
         } else {
-            SwipeRefresh(state = swipeRefreshState, onRefresh = viewModel::fetchAllIngredients) {
+            SwipeRefresh(state = swipeRefreshState, onRefresh = viewModel::fetchInventory) {
 
 
             LazyColumn(
@@ -86,8 +87,8 @@ fun InventoryScreen(
                     .fillMaxWidth()
                     .padding(top = 16.dp, bottom = 64.dp)
             ) {
-                items(ingredients) { ingredient ->
-                    IngrediantCard(ingrediant = ingredient)
+                items(inventory.ingrediants.size) { ingredient ->
+                    IngrediantCard(ingrediant = inventory.ingrediants.elementAt(ingredient))
                 }
             }
             }

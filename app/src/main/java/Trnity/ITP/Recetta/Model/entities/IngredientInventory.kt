@@ -4,7 +4,7 @@ import java.time.LocalDate
 
 data class IngredientInventory(
 
-    val ingredient: Ingredient,
+    val ingrediant: Ingredient,
     val qte : Int,
-    val date: LocalDate
+    val date: String
 )
