@@ -19,6 +19,6 @@ sealed class NavItem(val route: String, val icon: Int, val title: String)
     object Favorites : NavItem("favorites", R.drawable.favorite, "Favorites")
     object Profile : NavItem("profile", R.drawable.person, "Profile")
     object Inventory : NavItem("inventory",R.drawable.inventory,"inventory")
-    object Details : NavItem("recipe",0,"")
+    object login : NavItem("login",0,"")
 
 }

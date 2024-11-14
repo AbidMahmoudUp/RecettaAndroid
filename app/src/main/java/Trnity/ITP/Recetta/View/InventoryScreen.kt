@@ -1,15 +1,15 @@
 package Trnity.ITP.Recetta.View
 
 import Trnity.ITP.Recetta.R
-import Trnity.ITP.Recetta.View.Components.IngrediantCard
-import Trnity.ITP.Recetta.ViewModel.IngrediantViewModel
+import Trnity.ITP.Recetta.View.Components.IngrediantInventoryCard
+
 import Trnity.ITP.Recetta.ViewModel.InventoryViewModel
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Icon
@@ -88,7 +88,7 @@ fun InventoryScreen(
                     .padding(top = 16.dp, bottom = 64.dp)
             ) {
                 items(inventory.ingrediants.size) { ingredient ->
-                    IngrediantCard(ingrediant = inventory.ingrediants.elementAt(ingredient))
+                    IngrediantInventoryCard(ingrediant = inventory.ingrediants.elementAt(ingredient))
                 }
             }
             }

@@ -29,7 +29,7 @@ import java.util.Locale
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun IngrediantCard(ingrediant: IngredientInventory) {
+fun IngrediantInventoryCard(ingrediant: IngredientInventory) {
 
     val directImageUrl = ingrediant.ingrediant.image.replace("https://drive.google.com/file/d/", "https://drive.google.com/uc?export=download&id=")
         .replace("/view?usp=drive_link", "")

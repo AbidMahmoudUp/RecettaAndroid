@@ -79,13 +79,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.text.font.FontWeight.Companion.Medium
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.max
-import androidx.compose.ui.unit.min
+
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import kotlin.math.max
 import kotlin.math.min
 
@@ -100,139 +101,6 @@ fun RecipeScreen(recipe: Recipe) {
     Box {
         Content(recipe, scrollState)
         ParallaxToolbar(recipe, scrollState)
-    }
-}
-
-@Composable
-fun TopBar() {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-            .background(Color.Transparent) // Ensure background is transparent for layering
-    ) {
-        IconButton(onClick = { /* Back action */ }) {
-            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-        }
-
-    }
-}
-
-@Composable
-fun RecipeImage(imageRes: Int,modifier: Modifier = Modifier) {
-    Shadowed(
-        modifier = modifier.size(150.dp), // Set the size as needed
-        color = Color.Black.copy(alpha = 0.05f), // Shadow color with transparency
-        offsetX = -2.dp,
-        offsetY = 4.dp,
-        blurRadius = 2.dp
-    ) {
-        Box(
-            modifier = Modifier
-                .clip(CircleShape) // Circle shape for the image
-                .background(Color.White) // Background to enhance the shadow effect
-        ) {
-            Image(
-                painter = painterResource(imageRes),
-                contentDescription = "Recipe Image",
-                modifier = Modifier
-                    .fillMaxSize() // Make the image fill the Box
-                    .clip(CircleShape), // Clip again to ensure it stays circular
-                contentScale = ContentScale.Crop
-            )
-        }
-    }
-}
-@Composable
-fun RecipeTitleSection(title: String) {
-    Column {
-        Text(title, style = MaterialTheme.typography.bodyMedium)
-        Spacer(modifier = Modifier.height(4.dp))
-        //  Text("Servings: 2", style = MaterialTheme.typography.bodyMedium)
-    }
-}
-@Composable
-fun RecipeDescriptionSection(description: String) {
-    Text(description, style = MaterialTheme.typography.bodySmall)
-}
-@Composable
-fun RecipeTags() {
-    Row {
-        listOf("Chinese", "Main", "Spicy").forEach { tag ->
-            Chip(tag)
-            Spacer(modifier = Modifier.width(4.dp))
-        }
-    }
-}
-
-@Composable
-fun Chip(text: String) {
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(8.dp))
-            .background(Color.LightGray)
-            .padding(horizontal = 8.dp, vertical = 4.dp)
-    ) {
-        Text(text, style = MaterialTheme.typography.bodyMedium)
-    }
-}
-
-@Composable
-fun IngredientsSection() {
-    Column {
-        Text("Ingredients", style = MaterialTheme.typography.bodyMedium)
-        Spacer(modifier = Modifier.height(8.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            listOf("Noodles", "Prawns", "Spices").forEach { ingredient ->
-                IngredientCardDetails(ingredient)
-            }
-        }
-    }
-}
-
-@Composable
-fun IngredientCardDetails(ingredient: String) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.width(60.dp)
-    ) {
-        Icon(Icons.Default.Star, contentDescription = "Ingredient Icon") // Replace with actual ingredient image
-        Text(ingredient, style = MaterialTheme.typography.bodyMedium)
-    }
-}
-
-@Composable
-fun RecipeInstructions() {
-    Column {
-        Text("Instructions", style = MaterialTheme.typography.bodySmall)
-        Spacer(modifier = Modifier.height(8.dp))
-        Step("Step 1: Boil water and add the noodles.")
-        Step("Step 2: Add prawns and spices.")
-    }
-}
-
-@Composable
-fun Step(instruction: String) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(Icons.Default.Check, contentDescription = "Step Icon")
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(instruction, style = MaterialTheme.typography.bodySmall)
-    }
-}
-
-@Composable
-fun ActionButtons() {
-    Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Button(onClick = { /* Add to plan */ }) {
-            Text("Add to Plan")
-        }
-        Button(onClick = { /* Start Cooking */ }) {
-            Text("Start Cooking")
-        }
     }
 }
 // Compose the given content with a drop shadow on all
@@ -293,96 +161,111 @@ private fun shadowColorMatrix(color: Color): ColorMatrix {
         set(3, 3, color.alpha) // Multiply by given color's alpha
     }
 }
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ParallaxToolbar(recipe: Recipe, scrollState: LazyListState) {
     val imageHeight = AppBarExpendedHeight - AppBarCollapsedHeight
-
     val maxOffset = with(LocalDensity.current) { imageHeight.roundToPx() }
     val offset = min(scrollState.firstVisibleItemScrollOffset, maxOffset)
     val offsetProgress = max(0f, offset * 3f - 2f * maxOffset) / maxOffset
 
-    // TopAppBar with title and navigation icons only
-    TopAppBar(
-        modifier = Modifier
-            .height(AppBarExpendedHeight)
-            .offset { IntOffset(x = 0, y = -offset) },
-        colors = TopAppBarDefaults.topAppBarColors(containerColor = White),
-        scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(),
-        title = {
-            Text(
-                text = recipe.title ?: "Recipe Title", // Use default if title is null
-                fontSize = 26.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .padding(horizontal = (16 + 28 * offsetProgress).dp)
-                    .scale(1f - 0.25f * offsetProgress)
-            )
-        },
-        navigationIcon = {
-            IconButton(onClick = { /* Action */ }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_arrow_back),
-                    contentDescription = null,
-                    tint = Gray
-                )
-            }
-        },
-        actions = {
-            IconButton(onClick = { /* Action */ }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_favorite),
-                    contentDescription = null,
-                    tint = Gray
-                )
-            }
-        }
-    )
+    // Convert imageHeight to pixels (Float) for gradient
+    val imageHeightPx = with(LocalDensity.current) { imageHeight.toPx() }
 
-    // Separate content for the parallax effect and additional layout elements
-    Column(
-        Modifier
-            .height(imageHeight)
-            .graphicsLayer { alpha = 1f - offsetProgress }
-            .offset { IntOffset(x = 0, y = -offset) } // Parallax effect
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.strawberry_pie_1),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
-        )
-
+    Box {
+        // Parallax Image with Gradient Overlay
         Box(
             modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(Transparent, White),
-                        startY = 0.4f,
-                        endY = 1f
-                    )
-                )
-        )
-
-        Row(
-            modifier = Modifier
-                .fillMaxHeight()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.Bottom
+                .height(imageHeight)
+                .offset { IntOffset(x = 0, y = -offset) }
+                .graphicsLayer { alpha = 1f - offsetProgress }
         ) {
-            Text(
-                text = recipe.category ?: "Category", // Use default if category is null
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier
-                    .clip(Shapes.small)
-                    .background(LightGray)
-                    .padding(vertical = 6.dp, horizontal = 16.dp)
+            Image(
+                painter = painterResource(id = R.drawable.strawberry_pie_1),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
             )
+
+            // Gradient overlay
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(Transparent, White),
+                            startY = imageHeightPx * 0.4f,
+                            endY = imageHeightPx
+                        )
+                    )
+            )
+
+            // Category label
+            Row(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.Bottom
+            ) {
+                Text(
+                    text = recipe.category ?: "Category", // Default if category is null
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier
+                        .clip(Shapes.small)
+                        .background(LightGray)
+                        .padding(vertical = 6.dp, horizontal = 16.dp)
+                )
+            }
         }
+
+        // Title and icon row positioned below the image
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .offset { IntOffset(x = 0, y = maxOffset - offset) } // Offset to place below the image
+                .background(White)
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            // Centered Title with Navigation and Favorite Icons
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = { /* Action */ }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_arrow_back),
+                        contentDescription = null,
+                        tint = Gray
+                    )
+                }
+
+                // Title centered in the middle
+                Text(
+                    text = recipe.title ?: "Recipe Title", // Default if title is null
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp) // Space between icons and title
+                        .scale(1f - 0.15f * offsetProgress)
+                )
+
+                IconButton(onClick = { /* Action */ }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_favorite),
+                        contentDescription = null,
+                        tint = Gray
+                    )
+                }
+            }
+        }
+
     }
 }
+
 
 @Composable
 fun CircularButton(
