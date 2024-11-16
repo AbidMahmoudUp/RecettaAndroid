@@ -31,7 +31,7 @@ import java.util.Locale
 @Composable
 fun IngrediantInventoryCard(ingrediant: IngredientInventory) {
 
-    val directImageUrl = ingrediant.ingrediant.image.replace("https://drive.google.com/file/d/", "https://drive.google.com/uc?export=download&id=")
+    val directImageUrl = ingrediant.ingredient.image.replace("https://drive.google.com/file/d/", "https://drive.google.com/uc?export=download&id=")
         .replace("/view?usp=drive_link", "")
     val quantitie : Int = 17
     Row(modifier = Modifier
@@ -52,7 +52,7 @@ fun IngrediantInventoryCard(ingrediant: IngredientInventory) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                 ) {
-                Text(ingrediant.ingrediant.name ,style = MaterialTheme.typography.titleMedium )
+                Text(ingrediant.ingredient.name ,style = MaterialTheme.typography.titleMedium )
                 Text(text = " items :"+ quantitie,style = MaterialTheme.typography.bodySmall )
             }
             Spacer(Modifier.height(20.dp))

@@ -1,13 +1,15 @@
 package Trnity.ITP.Recetta.Model.entities
 
-data class Recipe (
-                    val id : String,
-                    val title: String,
-                    val description: String,
-                    val imageRes: Int,
-                    val category :String,
-                    val cookingTime: String ,
-                    val energy:String ,
-                    val rating : String ,
-                    val ingredients : List<Ingredient>
-                    )
+import com.google.gson.annotations.SerializedName
+
+data class Recipe(
+    @SerializedName("_id") val id: String ="",
+    @SerializedName("title") val title: String ="",
+    @SerializedName("description") val description: String ="",
+    @SerializedName("imageRecipe") val imageRecipe: String = "",
+    @SerializedName("category") val category: String = "",
+    @SerializedName("cookingTime") val cookingTime: String = "",
+    @SerializedName("energy") val energy: String = "",
+    @SerializedName("rating") val rating: String = "",
+    @SerializedName("ingredients") val ingredients: List<IngredientRecipe> = emptyList() // Use "ingrediants"
+)

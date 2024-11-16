@@ -1,5 +1,5 @@
+import Trnity.ITP.Recetta.Model.entities.Recipe
 import Trnity.ITP.Recetta.R
-import Trnity.ITP.Recetta.View.Components.Items.HomeCardItem
 import Trnity.ITP.Recetta.View.Shadowed
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.RepeatMode
@@ -7,7 +7,6 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 
@@ -20,25 +19,26 @@ import androidx.compose.ui.Alignment
 
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.currentBackStackEntryAsState
+import coil.compose.AsyncImage
 
 import com.google.gson.Gson
 
 @Composable
-fun RecipeCardWithImage(navController: NavController, recipeTitle: String, description: String, imageRes: Int) {
+fun RecipeCardWithImage(navController: NavController, recipe : Recipe) {
+    println("RecipeCardWithImage: recipe = $recipe")
 
-    fun navigateToDetails(recipe: HomeCardItem) {
-        val jsonRecipe = Gson().toJson(recipe)
-        navController.navigate("recipeScreen/$jsonRecipe"){
+    val directImageUrl = recipe.imageRecipe.replace("https://drive.google.com/file/d/", "https://drive.google.com/uc?export=download&id=")
+        .replace("/view?usp=drive_link", "")
+    fun navigateToDetails(recipeId: String) {
+      //  val jsonRecipe = Gson().toJson(recipe)
+        navController.navigate("recipeScreen/$recipeId"){
             popUpTo(navController.graph.startDestinationId) { saveState = true }
             //println("currentRoute is : "+item.route)
             launchSingleTop = true
@@ -79,13 +79,13 @@ fun RecipeCardWithImage(navController: NavController, recipeTitle: String, descr
                     Spacer(modifier = Modifier.height(70.dp))
 
                     Text(
-                        text = recipeTitle,
+                        text = recipe.title,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.Black,
                     )
                     Text(
-                        text = description,
+                        text = recipe.description,
                         fontSize = 14.sp,
                         color = Color.Gray,
                         maxLines = 4,
@@ -102,9 +102,9 @@ fun RecipeCardWithImage(navController: NavController, recipeTitle: String, descr
                     Spacer(modifier = Modifier.height(8.dp))
                     Button(
                         onClick = {
-                            val recipe = HomeCardItem(recipeTitle, description, imageRes)
 
-                            navigateToDetails(recipe)
+
+                            navigateToDetails(recipe.id)
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF46D42)),
                         modifier = Modifier.fillMaxWidth()
@@ -150,8 +150,8 @@ fun RecipeCardWithImage(navController: NavController, recipeTitle: String, descr
                         .clip(CircleShape)
                         .background(Color.White, CircleShape)
                 ) {
-                    Image(
-                        painter = painterResource(id = imageRes),
+                    AsyncImage(
+                       model = directImageUrl,
                         contentDescription = "Recipe Image",
                         modifier = Modifier
                             .fillMaxSize()

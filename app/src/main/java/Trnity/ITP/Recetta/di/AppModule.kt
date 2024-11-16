@@ -3,23 +3,19 @@ package Trnity.ITP.Recetta.di
 import Trnity.ITP.Recetta.Data.remote.api.ApiClient
 import Trnity.ITP.Recetta.Data.remote.api.IngredientApiService
 import Trnity.ITP.Recetta.Data.remote.api.InventoryApiService
-import Trnity.ITP.Recetta.Data.remote.api.PlatApiService
 import Trnity.ITP.Recetta.Data.remote.api.RecipeApiService
 import Trnity.ITP.Recetta.Data.remote.api.UserApiService
 import Trnity.ITP.Recetta.Data.remote.repository.IngredientRepositoryImplementation
 import Trnity.ITP.Recetta.Data.remote.repository.InventoryRepositoryImplementation
-import Trnity.ITP.Recetta.Data.remote.repository.PlatRepositoryImplementation
 import Trnity.ITP.Recetta.Data.remote.repository.RecipeRepositoryImplementation
 import Trnity.ITP.Recetta.Data.remote.repository.UserRepositoryImplementation
 import Trnity.ITP.Recetta.Model.repositories.IngredientRepository
 import Trnity.ITP.Recetta.Model.repositories.InventoryRepository
-import Trnity.ITP.Recetta.Model.repositories.PlatRepository
 import Trnity.ITP.Recetta.Model.repositories.RecipeRepository
 import Trnity.ITP.Recetta.Model.repositories.UserRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.scopes.ActivityScoped
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
@@ -70,18 +66,6 @@ object AppModule {
     fun provideRecipeRepository(apiService: RecipeApiService): RecipeRepository =
         RecipeRepositoryImplementation(apiService)
 
-    // Provides an instance of IngredientApiService using ApiClient
-    @Provides
-    @Singleton
-    fun providePlatApiService(): PlatApiService =
-        ApiClient.create(PlatApiService::class.java)
-
-
-    // Provides an instance of RecipeRepository using IngredientRepositoryImplementation
-    @Provides
-    @Singleton
-    fun providePlatRepository(apiService: PlatApiService): PlatRepository =
-        PlatRepositoryImplementation(apiService)
 
     @Provides
     @Singleton

@@ -4,6 +4,9 @@ package Trnity.ITP.Recetta.View
 import Trnity.ITP.Recetta.Model.entities.Recipe
 import Trnity.ITP.Recetta.R
 import Trnity.ITP.Recetta.View.Components.Items.HomeCardItem
+import Trnity.ITP.Recetta.View.Components.RecipeIngredientCard
+import Trnity.ITP.Recetta.ViewModel.InventoryViewModel
+import Trnity.ITP.Recetta.ViewModel.RecipeViewModel
 import Trnity.ITP.Recetta.ui.theme.AppBarCollapsedHeight
 import Trnity.ITP.Recetta.ui.theme.AppBarExpendedHeight
 import Trnity.ITP.Recetta.ui.theme.DarkGray
@@ -28,30 +31,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ButtonElevation
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -73,6 +66,7 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -84,21 +78,27 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
+import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import kotlin.math.max
 import kotlin.math.min
 
 
 @Composable
-fun RecipeScreen(recipe: Recipe) {
+fun RecipeScreen(recipeId: String ,viewModel: RecipeViewModel = hiltViewModel()) {
+
+    LaunchedEffect(recipeId) {
+        viewModel.fetchRecipe(recipeId)
+    }
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
     val scrollState = rememberLazyListState()
+    val recipe = viewModel.recipe.collectAsState().value
 
-
-    Box {
+    println("--------------------------------------- TestRecipeScreen ------------------------------------------------------")
+    println(recipe)
+    Box(Modifier.padding(0.dp,0.dp,0.dp,80.dp)) {
         Content(recipe, scrollState)
         ParallaxToolbar(recipe, scrollState)
     }
@@ -164,6 +164,8 @@ private fun shadowColorMatrix(color: Color): ColorMatrix {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ParallaxToolbar(recipe: Recipe, scrollState: LazyListState) {
+    val directImageUrl = recipe.imageRecipe.replace("https://drive.google.com/file/d/", "https://drive.google.com/uc?export=download&id=")
+        .replace("/view?usp=drive_link", "")
     val imageHeight = AppBarExpendedHeight - AppBarCollapsedHeight
     val maxOffset = with(LocalDensity.current) { imageHeight.roundToPx() }
     val offset = min(scrollState.firstVisibleItemScrollOffset, maxOffset)
@@ -180,8 +182,8 @@ fun ParallaxToolbar(recipe: Recipe, scrollState: LazyListState) {
                 .offset { IntOffset(x = 0, y = -offset) }
                 .graphicsLayer { alpha = 1f - offsetProgress }
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.strawberry_pie_1),
+            AsyncImage(
+                model = directImageUrl,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
@@ -222,7 +224,12 @@ fun ParallaxToolbar(recipe: Recipe, scrollState: LazyListState) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .offset { IntOffset(x = 0, y = maxOffset - offset) } // Offset to place below the image
+                .offset {
+                    IntOffset(
+                        x = 0,
+                        y = maxOffset - offset
+                    )
+                } // Offset to place below the image
                 .background(White)
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
@@ -373,14 +380,11 @@ fun ShoppingListButton() {
 
 @Composable
 fun IngredientsList(recipe: Recipe) {
-    // Use an empty list if ingredients is null
-    EasyGrid(nColumns = 3, items = recipe.ingredients ?: emptyList()) {
-        IngredientCard(
-            iconResource = R.drawable.food_image, // Provide a default image if null
-            title = it.name ?: "Unknown",  // Default title if null
-            subtitle = it.categorie ?: "Uncategorized", // Default subtitle if null
-            modifier = Modifier
-        )
+    val ingredients = recipe.ingredients
+
+    // Display a grid of RecipeIngredientCard for each ingredient
+    EasyGrid(nColumns = 3, items = ingredients) { ingredientRecipe ->
+        RecipeIngredientCard(recipeIngredient = ingredientRecipe)
     }
 }
 

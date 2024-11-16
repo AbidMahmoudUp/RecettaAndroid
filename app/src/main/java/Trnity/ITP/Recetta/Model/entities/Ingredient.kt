@@ -1,12 +1,11 @@
 package Trnity.ITP.Recetta.Model.entities
 
-import java.time.LocalDateTime
 
 
 data class Ingredient (
+    val _id: String,
     val name : String,
     val image : String,
-
-    //val imageTest : Int,
+    val unit : String,
     val categorie :String,
     )

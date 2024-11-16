@@ -65,18 +65,24 @@ fun InventoryScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(text = "Ingredients (${inventory.ingrediants.size})")
+            Text(text = "Ingredients (${inventory.ingredients.size})")
             Text(
                 text = "+ Add item",
                 color = Color(0xFFF46D42),
                 modifier = Modifier
                     .padding(12.dp, 0.dp, 12.dp, 0.dp)
-                    .clickable { navController.navigate("AddIngrediant") }
+                    .clickable { navController.navigate("AddIngrediant"){
+                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                        //println("currentRoute is : "+item.route)
+                        launchSingleTop = true
+                        restoreState = true
+
+                    } }
             )
         }
 
         // Display ingredients or "No ingredients" message
-        if (inventory.ingrediants.isEmpty()) {
+        if (inventory.ingredients.isEmpty()) {
             Text("No ingredients available")
         } else {
             SwipeRefresh(state = swipeRefreshState, onRefresh = viewModel::fetchInventory) {
@@ -87,8 +93,8 @@ fun InventoryScreen(
                     .fillMaxWidth()
                     .padding(top = 16.dp, bottom = 64.dp)
             ) {
-                items(inventory.ingrediants.size) { ingredient ->
-                    IngrediantInventoryCard(ingrediant = inventory.ingrediants.elementAt(ingredient))
+                items(inventory.ingredients.size) { ingredient ->
+                    IngrediantInventoryCard(ingrediant = inventory.ingredients.elementAt(ingredient))
                 }
             }
             }

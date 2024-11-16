@@ -10,6 +10,7 @@ import Trnity.ITP.Recetta.View.InventoryScreen
 import Trnity.ITP.Recetta.View.ProfileScreen
 import Trnity.ITP.Recetta.View.RecipeScreen
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.PaddingValues
@@ -75,12 +76,15 @@ fun MainNavigation(navController: NavHostController) {
         composable(NavItem.Inventory.route) {InventoryScreen(navController)  }
         composable("AddIngrediant") { AddIngridiant(navController = navController)  }
         composable(
-            "recipeScreen/{jsonRecipe}",
-            arguments = listOf(navArgument("jsonRecipe") { type = NavType.StringType })
-        ) { backStackEntry ->
-            backStackEntry.arguments?.getString("jsonRecipe")?.let { json ->
-                val recipe = Gson().fromJson(json, Recipe::class.java)
-                RecipeScreen( recipe = recipe)
+            "recipeScreen/{recipeId}",
+            arguments = listOf(navArgument("recipeId") { type = NavType.StringType })
+        ) {backStackEntry ->
+            val recipeId = backStackEntry.arguments?.getString("recipeId")
+            Log.d("MainNavigation", "Navigating to RecipeScreen with recipeId: $recipeId")
+
+            if (recipeId != null) {
+                RecipeScreen(recipeId = recipeId)
+
             }
         }
     }

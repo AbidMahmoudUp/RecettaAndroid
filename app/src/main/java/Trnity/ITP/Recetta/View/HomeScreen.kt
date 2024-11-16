@@ -1,6 +1,7 @@
 import Trnity.ITP.Recetta.View.Components.AppDrawer
 import Trnity.ITP.Recetta.View.Components.Items.sampleRecipes
 import Trnity.ITP.Recetta.ViewModel.DrawerViewModel
+import Trnity.ITP.Recetta.ViewModel.RecipeViewModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -21,6 +22,8 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,18 +41,25 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 
 import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(navController: NavController) {
+fun HomeScreen( navController: NavController,viewModel: RecipeViewModel = hiltViewModel()) {
 
 
 
 
     //val navController = rememberNavController()
+    val recipes by viewModel.recipes.collectAsState()
+    println("----------------------------------TestRecipes -----------------------------------------")
+    println(recipes)
+    LaunchedEffect(Unit) {
+        viewModel.fetchAllRecipes()
+    }
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val drawerViewModel: DrawerViewModel = DrawerViewModel()
     val coroutineScope = rememberCoroutineScope()
@@ -139,12 +149,10 @@ fun HomeScreen(navController: NavController) {
                             .wrapContentWidth()
                             .padding(0.dp, 0.dp, 0.dp, 0.dp) // Ensure LazyRow doesn't take full width
                     ) {
-                        items(sampleRecipes) { recipe ->
+                        items(recipes) { recipe ->
 
                             RecipeCardWithImage(navController,
-                                recipeTitle = recipe.title,
-                                description = recipe.description,
-                                imageRes = recipe.imageRes
+                               recipe = recipe
                             )
                         }
                     }
