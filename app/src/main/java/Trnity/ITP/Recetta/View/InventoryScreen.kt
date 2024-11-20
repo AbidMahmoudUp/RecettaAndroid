@@ -94,7 +94,7 @@ fun InventoryScreen(
                     .padding(top = 16.dp, bottom = 64.dp)
             ) {
                 items(inventory.ingredients.size) { ingredient ->
-                    IngrediantInventoryCard(ingrediant = inventory.ingredients.elementAt(ingredient))
+                    IngrediantInventoryCard(ingredient = inventory.ingredients.elementAt(ingredient))
                 }
             }
             }

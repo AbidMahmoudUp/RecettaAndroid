@@ -2,7 +2,8 @@ package Trnity.ITP.Recetta.View.Components
 
 import HomeScreen
 import Trnity.ITP.Recetta.Model.entities.Recipe
-import Trnity.ITP.Recetta.View.AddIngridiant
+import Trnity.ITP.Recetta.View.AddIngredient
+
 import Trnity.ITP.Recetta.View.Components.Items.HomeCardItem
 import Trnity.ITP.Recetta.View.Components.Items.NavItem
 import Trnity.ITP.Recetta.View.FavoritesScreen
@@ -74,7 +75,7 @@ fun MainNavigation(navController: NavHostController) {
         composable(NavItem.Favorites.route) { FavoritesScreen() }
         composable(NavItem.Profile.route) { ProfileScreen() }
         composable(NavItem.Inventory.route) {InventoryScreen(navController)  }
-        composable("AddIngrediant") { AddIngridiant(navController = navController)  }
+        composable("AddIngrediant") { AddIngredient(navController = navController)  }
         composable(
             "recipeScreen/{recipeId}",
             arguments = listOf(navArgument("recipeId") { type = NavType.StringType })
@@ -87,5 +88,6 @@ fun MainNavigation(navController: NavHostController) {
 
             }
         }
+
     }
 }

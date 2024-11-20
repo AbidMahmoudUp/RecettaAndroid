@@ -29,16 +29,15 @@ import java.util.Locale
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun IngrediantInventoryCard(ingrediant: IngredientInventory) {
+fun IngrediantInventoryCard(ingredient: IngredientInventory) {
 
-    val directImageUrl = ingrediant.ingredient.image.replace("https://drive.google.com/file/d/", "https://drive.google.com/uc?export=download&id=")
-        .replace("/view?usp=drive_link", "")
+
     val quantitie : Int = 17
     Row(modifier = Modifier
         .padding(0.dp, 8.dp, 4.dp, 4.dp)
         .fillMaxWidth()
         ){
-        AsyncImage(model = directImageUrl , contentDescription = "Test" ,
+        AsyncImage(model = "http://192.168.43.232:3000/uploads/"+ingredient.ingredient.image , contentDescription = "Test" ,
           Modifier
               .padding(12.dp)
               .size(70.dp))
@@ -52,7 +51,7 @@ fun IngrediantInventoryCard(ingrediant: IngredientInventory) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                 ) {
-                Text(ingrediant.ingredient.name ,style = MaterialTheme.typography.titleMedium )
+                Text(ingredient.ingredient.name ,style = MaterialTheme.typography.titleMedium )
                 Text(text = " items :"+ quantitie,style = MaterialTheme.typography.bodySmall )
             }
             Spacer(Modifier.height(20.dp))

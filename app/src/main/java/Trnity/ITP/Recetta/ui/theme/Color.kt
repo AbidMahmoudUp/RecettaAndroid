@@ -3,6 +3,7 @@ package Trnity.ITP.Recetta.ui.theme
 import androidx.compose.ui.graphics.Color
 
 val Purple80 = Color(0xFFD0BCFF)
+val Orange = Color(0xFC610F)
 val PurpleGrey80 = Color(0xFFCCC2DC)
 val Pink80 = Color(0xFFEFB8C8)
 val Pink = Color(0xFFB50F53)
