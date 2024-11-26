@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -32,7 +33,7 @@ import java.util.Locale
 fun IngrediantInventoryCard(ingredient: IngredientInventory) {
 
 
-    val quantitie : Int = 17
+
     Row(modifier = Modifier
         .padding(0.dp, 8.dp, 4.dp, 4.dp)
         .fillMaxWidth()
@@ -52,7 +53,7 @@ fun IngrediantInventoryCard(ingredient: IngredientInventory) {
                         verticalAlignment = Alignment.CenterVertically
                 ) {
                 Text(ingredient.ingredient.name ,style = MaterialTheme.typography.titleMedium )
-                Text(text = " items :"+ quantitie,style = MaterialTheme.typography.bodySmall )
+                Text(text = " items :"+ ingredient.qte,style = MaterialTheme.typography.bodySmall )
             }
             Spacer(Modifier.height(20.dp))
             Row (modifier = Modifier
@@ -60,7 +61,7 @@ fun IngrediantInventoryCard(ingredient: IngredientInventory) {
                 .fillMaxHeight(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ){
-                //Text(ingrediant.categorie , style = MaterialTheme.typography.bodySmall)
+                Text(ingredient.ingredient.categorie , color = Color(0xFF06402B),style = MaterialTheme.typography.bodyMedium)
                 Text(DateTimeFormatter.ofPattern("MM-dd-yyyy", Locale.ENGLISH,).format(LocalDate.now()),style = MaterialTheme.typography.bodySmall )
             }
         }

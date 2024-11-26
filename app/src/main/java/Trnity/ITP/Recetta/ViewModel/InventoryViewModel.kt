@@ -1,9 +1,13 @@
 package Trnity.ITP.Recetta.ViewModel
 
+import Trnity.ITP.Recetta.Data.remote.Requests.UpdateUserInventory
+import Trnity.ITP.Recetta.Model.entities.IngredientRecipe
 import Trnity.ITP.Recetta.Model.entities.Inventory
 import Trnity.ITP.Recetta.Model.repositories.InventoryRepository
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -54,4 +58,17 @@ constructor(
             }
         }
     }
+
+    fun updateInventory(ingredients: Set<IngredientRecipe>) {
+        val requestBody = UpdateUserInventory(ingredients)
+        viewModelScope.launch {
+            try {
+                val responseBody = repository.updateInventory("6730c43b986803e32821be1f", requestBody)
+                Log.d("Update Response", responseBody.toString())
+            } catch (e: Exception) {
+                Log.e("Update Error", e.message ?: "Unknown error")
+            }
+        }
+    }
+
 }

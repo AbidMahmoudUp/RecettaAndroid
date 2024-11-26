@@ -1,6 +1,8 @@
 package Trnity.ITP.Recetta.View
 
 
+import Trnity.ITP.Recetta.Model.entities.Ingredient
+import Trnity.ITP.Recetta.Model.entities.IngredientRecipe
 import Trnity.ITP.Recetta.Model.entities.Recipe
 import Trnity.ITP.Recetta.R
 import Trnity.ITP.Recetta.View.Components.Items.HomeCardItem
@@ -16,6 +18,7 @@ import Trnity.ITP.Recetta.ui.theme.Pink
 import Trnity.ITP.Recetta.ui.theme.Shapes
 import Trnity.ITP.Recetta.ui.theme.Transparent
 import Trnity.ITP.Recetta.ui.theme.White
+import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -31,21 +34,26 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -88,11 +96,12 @@ import kotlin.math.min
 @Composable
 fun RecipeScreen(recipeId: String ,viewModel: RecipeViewModel = hiltViewModel()) {
 
+
+// ----------------------------
     LaunchedEffect(recipeId) {
         viewModel.fetchRecipe(recipeId)
     }
-    val screenHeight = LocalConfiguration.current.screenHeightDp.dp
-    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+
     val scrollState = rememberLazyListState()
     val recipe = viewModel.recipe.collectAsState().value
 
@@ -302,8 +311,7 @@ fun Content(recipe: Recipe, scrollState: LazyListState) {
             BasicInfo(recipe)
             Description(recipe)
             ServingCalculator()
-            IngredientsHeader()
-            IngredientsList(recipe)
+            IngredientsHeader(recipe)
             ShoppingListButton()
             Reviews(recipe)
             Images()
@@ -345,7 +353,9 @@ fun Reviews(recipe: Recipe) {
           //  Text(recipe.reviews, color = DarkGray)
         }
         Button(
-            onClick = { /*TODO*/ }, elevation = null, colors = ButtonDefaults.buttonColors(
+            onClick = { /*TODO*/ },
+            elevation = null,
+            colors = ButtonDefaults.buttonColors(
                 containerColor = Transparent, contentColor = Pink
             )
         ) {
@@ -410,49 +420,11 @@ fun <T> EasyGrid(nColumns: Int, items: List<T>, content: @Composable (T) -> Unit
     }
 }
 
-
 @Composable
-fun IngredientCard(
-    iconResource: Int?,
-    title: String?,
-    subtitle: String?,
-    modifier: Modifier
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier.padding(bottom = 16.dp)
-    ) {
-        Card(
-            shape = Shapes.large,
-            modifier = Modifier
-                .width(100.dp)
-                .height(100.dp)
-                .padding(bottom = 8.dp)
-                .background(LightGray)
-        ) {
-            Image(
-                painter = painterResource(id = iconResource ?: R.drawable.food_image), // Default image if null
-                contentDescription = null,
-                modifier = Modifier.padding(16.dp)
-            )
-        }
-        Text(
-            text = title ?: "Unknown Ingredient", // Default title if null
-            modifier = Modifier.width(100.dp),
-            fontSize = 14.sp,
-            fontWeight = Medium
-        )
-        Text(
-            text = subtitle ?: "No category", // Default subtitle if null
-            color = DarkGray,
-            modifier = Modifier.width(100.dp),
-            fontSize = 14.sp
-        )
-    }
-}
+fun IngredientsHeader(recipe: Recipe) {
 
-@Composable
-fun IngredientsHeader() {
+    var selectedTab by remember { mutableStateOf("Ingredients") }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -462,16 +434,64 @@ fun IngredientsHeader() {
             .fillMaxWidth()
             .height(44.dp)
     ) {
-        TabButton("Ingredients", true, Modifier.weight(1f))
-        TabButton("Tools", false, Modifier.weight(1f))
-        TabButton("Steps", false, Modifier.weight(1f))
+        TabButton(
+            text = "Ingredients",
+            active = selectedTab == "Ingredients",
+            modifier = Modifier.weight(1f),
+            onClick = { selectedTab = "Ingredients" }
+        )
+
+        TabButton(
+            text = "Steps",
+            active = selectedTab == "Steps",
+            modifier = Modifier.weight(1f),
+            onClick = { selectedTab = "Steps" }
+        )
+
+    }
+      when (selectedTab) {
+           "Ingredients" -> {
+               // Display the Ingredients list
+               IngredientsList(recipe = recipe)
+           }
+           "Steps" -> {
+               // Display Steps content
+               StepsList(steps = recipe.instructions) // Assuming `StepsList` and `recipe.steps` exist
+           }
+       }
+}
+@Composable
+fun StepsList(steps: List<String>) {
+    // Extract and process the steps from the first string
+    val textSteps = steps[0].split(".").map { it.trim() }.filter { it.isNotEmpty() }
+
+    Column(Modifier.padding(16.dp)) {
+        textSteps.forEach { step ->
+            Row(
+                verticalAlignment = Alignment.CenterVertically, // Align icon and text vertically centered
+                modifier = Modifier.padding(vertical = 8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.CheckCircle, // Replace with your preferred icon
+                    contentDescription = "Instruction Icon",
+                    modifier = Modifier.size(20.dp), // Adjust icon size
+                    tint = Color(0xFFFC610F) // Use a theme color or customize
+                )
+                Spacer(modifier = Modifier.width(8.dp)) // Space between icon and text
+                Text(
+                    text = step,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.weight(1f) // Ensure text takes available space
+                )
+            }
+        }
     }
 }
 
 @Composable
-fun TabButton(text: String, active: Boolean, modifier: Modifier) {
+fun TabButton(text: String, active: Boolean, modifier: Modifier, onClick: () -> Unit) {
     Button(
-        onClick = { /*TODO*/ },
+        onClick = onClick,
         shape = Shapes.medium,
         modifier = modifier.fillMaxHeight(),
         elevation = null,
@@ -486,6 +506,7 @@ fun TabButton(text: String, active: Boolean, modifier: Modifier) {
         Text(text)
     }
 }
+
 
 @Composable
 fun ServingCalculator() {

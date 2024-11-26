@@ -1,7 +1,13 @@
+import Trnity.ITP.Recetta.Model.entities.IngredientRecipe
 import Trnity.ITP.Recetta.View.Components.AppDrawer
 import Trnity.ITP.Recetta.View.Components.Items.sampleRecipes
 import Trnity.ITP.Recetta.ViewModel.DrawerViewModel
 import Trnity.ITP.Recetta.ViewModel.RecipeViewModel
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -11,11 +17,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
-import androidx.compose.material3.ButtonDefaults
+
 import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalNavigationDrawer
@@ -29,29 +32,51 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import Trnity.ITP.Recetta.R
+import android.graphics.drawable.AnimatedVectorDrawable
+import android.widget.ImageView
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
+
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import kotlinx.coroutines.delay
 
 import kotlinx.coroutines.launch
-@OptIn(ExperimentalMaterial3Api::class)
+
+data class CategorieHome(val image : Int, val text: String)
 @Composable
 fun HomeScreen( navController: NavController,viewModel: RecipeViewModel = hiltViewModel()) {
 
 
 
+
+    var categoryList = listOf<CategorieHome>(
+        CategorieHome(R.drawable.pizza , "Fast Food" ),
+        CategorieHome(R.drawable.stroberry , "Fruits" ),
+        CategorieHome(R.drawable.drinks , "Drinks" )
+    )
 
     //val navController = rememberNavController()
     val recipes by viewModel.recipes.collectAsState()
@@ -79,7 +104,7 @@ fun HomeScreen( navController: NavController,viewModel: RecipeViewModel = hiltVi
                 drawerHeight = calculatedDrawerHeight
             )
         },
-        content = { // Main content when the drawer is closed
+        content = {
             Column(
                 modifier = Modifier
                     .padding(0.dp)
@@ -87,49 +112,48 @@ fun HomeScreen( navController: NavController,viewModel: RecipeViewModel = hiltVi
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally // Center align all content in Column
             ) {
-                
-                
 
-                // Top-left menu icon
-                Box(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp)
+                        .padding(8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically // Ensures proper vertical alignment
                 ) {
+                    // Top-left menu icon
                     IconButton(
                         onClick = {
                             coroutineScope.launch {
                                 if (drawerState.isClosed) drawerState.open() else drawerState.close()
                             }
-                        },
-                        modifier = Modifier.align(Alignment.TopStart)
+                        }
                     ) {
-                        Icon(Icons.Default.Menu, contentDescription = "Menu Icon")
+                        Icon(
+                            imageVector = Icons.Default.Menu,
+                            contentDescription = "Menu Icon"
+                        )
                     }
+
+                    // Top-right SmokingSkillet icon
+                    SmokingSkillet(navController)
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = HighlightLastTwoWords("Simple recipes with your inventory ingredients"),
                     fontSize = 18.sp,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Start
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(17.dp),
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    repeat(4) {
-                        Button(
-                            onClick = { /* TODO */ },
-                            modifier = Modifier
-                                .height(50.dp)
-                                .width(50.dp).background(Color.White)
-                                .shadow(8.dp, shape = RoundedCornerShape(0.dp)),
-                            shape = RoundedCornerShape(0),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray)
-                        ) {
-                            // Button content
+
+                    items(categoryList){
+                                        tab->
+                        categorieHomeTab(category = tab, isSelected = true ) {
+                            
                         }
                     }
                 }
@@ -179,4 +203,71 @@ fun HighlightLastTwoWords(text: String): AnnotatedString {
     }
 }
 
+@Composable
+fun SmokingSkillet(navController:NavController) {
+    val context = LocalContext.current
+    val animatedDrawable = remember {
+        AppCompatResources.getDrawable(context, R.drawable.animated_skillet) as? AnimatedVectorDrawable
+            ?: throw IllegalArgumentException("Drawable not found or not an AnimatedVectorDrawable")
+    }
+
+    // Start the animation
+    LaunchedEffect(Unit) {
+        animatedDrawable.start()
+    }
+
+    // Render the Animated Vector Drawable
+    AndroidView(
+        factory = { ctx ->
+            ImageView(ctx).apply {
+                setImageDrawable(animatedDrawable)
+            }
+        },
+        modifier = Modifier
+            .size(48.dp)
+            .padding(end = 8.dp)
+            .clickable {
+                navController.navigate("GenerateRecipe") {
+                    popUpTo(navController.graph.startDestinationId) { saveState = true }
+                    launchSingleTop = true
+                    restoreState = true
+
+                }
+            }
+    )
+}
+@Composable
+fun categorieHomeTab(category : CategorieHome,isSelected: Boolean,  onClick: () -> Unit  ) {
+    Row(horizontalArrangement = Arrangement.SpaceAround,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .background(Color(0xFFF46D42), shape = RoundedCornerShape(28.dp))
+            .padding(8.dp, 8.dp).width(100.dp).height(24.dp)) {
+
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.background(color = Color.White ,shape = CircleShape).padding(2.dp)
+        )
+           {
+                Image(
+                    painter = painterResource(id = category.image),
+                    contentDescription = "image Categorie Home",
+
+                )
+
+            }
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+                text = category.text,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                fontSize = 12.sp,
+                maxLines = 1,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+}
 

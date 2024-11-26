@@ -45,7 +45,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun CardItemFavorite()
 {
-    var scale = 3;
+    var scale = 4;
     var orientation by remember { mutableStateOf(Configuration.ORIENTATION_PORTRAIT) }
 
     val configuration = LocalConfiguration.current
@@ -62,7 +62,7 @@ fun CardItemFavorite()
             scale = 2
         }
         else -> {
-            scale = 3
+            scale = 4
         }
     }
 
@@ -116,7 +116,8 @@ fun SingleItemFavCard(width: Int) {
 
         Text(
             "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s",
-            modifier = Modifier.padding(8.dp)
+            modifier = Modifier.padding(8.dp),
+
         )
 
         Row(

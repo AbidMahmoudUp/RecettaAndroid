@@ -1,10 +1,13 @@
 package Trnity.ITP.Recetta.View
 
 import Trnity.ITP.Recetta.Model.entities.Ingredient
+import Trnity.ITP.Recetta.Model.entities.IngredientRecipe
 import Trnity.ITP.Recetta.R
 
 import Trnity.ITP.Recetta.ViewModel.IngredientViewModel
+import Trnity.ITP.Recetta.ViewModel.InventoryViewModel
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
@@ -43,18 +46,42 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 
+@Composable
+fun navigationTitle(navController : NavController , title : String ){
+    Row( horizontalArrangement = Arrangement.Center , verticalAlignment =Alignment.CenterVertically ){IconButton(
+        onClick = {
+            navController.popBackStack() // Navigate back
+        }
+    ) {
+        Icon(
+            imageVector = Icons.Default.ArrowBack,
+            contentDescription = null,
+            tint = Color(0xFF039BE5)
+        )
+    }
+    Text(
+        text = title,
+        style = MaterialTheme.typography.titleMedium,
+        modifier = Modifier.padding(start = 8.dp)
+    )
+}}
 @SuppressLint("UnrememberedMutableInteractionSource")
 @Composable
-fun AddIngredient(navController: NavController , ingredientViewModel: IngredientViewModel = hiltViewModel()) {
+fun AddIngredient(navController: NavController ,inventoryViewModel: InventoryViewModel = hiltViewModel() ,ingredientViewModel: IngredientViewModel = hiltViewModel()) {
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
     val ingredients by ingredientViewModel.ingredients.collectAsState()
     val categories = listOf("All", "Fruit", "Vegetables", "Meat", "Nuts")
     var selectedCategory by remember { mutableStateOf("All") }
-
-    var text by remember { mutableStateOf("") }
+    var searchText by remember { mutableStateOf("") }
+    var listIngredientQte by remember { mutableStateOf(mutableSetOf<IngredientRecipe>()) }
     val focusManager = LocalFocusManager.current
-
+    val isSaveButtonVisible by remember {
+        derivedStateOf { listIngredientQte.isNotEmpty() }
+    }
+    fun doesMatchSearchQuery(ingredientName: String, query: String): Boolean {
+        return ingredientName.contains(query, ignoreCase = true)
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -68,37 +95,35 @@ fun AddIngredient(navController: NavController , ingredientViewModel: Ingredient
     ) {
         // Top Row: Back button and title
         Row(
-            horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.CenterVertically
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            IconButton(
-                onClick = {
-                    navController.popBackStack() // Navigate back
-                }
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = null,
-                    tint = Color(0xFF039BE5)
+            navigationTitle(navController,"Add Ingredient")
+
+            if (isSaveButtonVisible) {
+                Text(
+                    text = "Save",
+                    modifier = Modifier.clickable {
+                        Log.d("Ingredient QTE TEST", listIngredientQte.toString())
+                        inventoryViewModel.updateInventory(listIngredientQte)
+                    },
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
-            Text(
-                text = "Add Ingredient",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(start = 8.dp)
-            )
+
         }
 
-        Spacer(modifier = Modifier.height(8.dp)) // Add spacing between elements
+        Spacer(modifier = Modifier.height(8.dp))
 
-        // Center Column: Search field
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxWidth()
         ) {
             OutlinedTextField(
-                value = text,
-                onValueChange = { text = it },
+                value = searchText,
+                onValueChange = { newText -> searchText = newText },
+
                 modifier = Modifier
                     .width(screenWidth - 20.dp)
                     .padding(vertical = 8.dp),
@@ -111,6 +136,7 @@ fun AddIngredient(navController: NavController , ingredientViewModel: Ingredient
                     )
                 }
             )
+
             Text("Categories",modifier=Modifier.align(Alignment.Start),
                 style = MaterialTheme.typography.titleMedium )
             LazyRow( modifier = Modifier
@@ -129,7 +155,21 @@ fun AddIngredient(navController: NavController , ingredientViewModel: Ingredient
                         )
                     }
             }
-            CardGridExample(ingredients)
+            val filteredIngredients = ingredients.filter { ingredient ->
+                doesMatchSearchQuery(ingredient.name, searchText)
+            }
+            CardGridExample(
+                ingredients = filteredIngredients,
+                listOfIngredients = listIngredientQte,
+                onIngredientsUpdated = { updatedList ->
+                    listIngredientQte = updatedList.toMutableSet()
+                })
+
+            Button(modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(Color(0xFFFC610F))
+                   ,onClick = { /*TODO*/ }) {
+                    Text(text = "Add Ingredients")
+            }
         }
 
     }
@@ -144,37 +184,38 @@ fun CategoryTab(text: String, isSelected: Boolean, onClick: () -> Unit) {
             .clickable(
                 interactionSource = MutableInteractionSource(),
                 indication = null
-            ) { onClick() } // Handle clicks
+            ) { onClick() }
     ) {
-        // Icon container
+
         Box(
             modifier = Modifier
-                .size(60.dp) // Set container size
-                .clip(RoundedCornerShape(8.dp)) // Rounded corners
-                .background(if (isSelected) Color(0xFFFC610F) else Color.Transparent), // Highlight if selected
+                .size(45.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(if (isSelected) Color(0xFFFC610F) else Color.Transparent),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.vegtableicon),
                 contentDescription = null,
-                tint = if (isSelected) Color.White else Color(0xFFFC610F), // Change icon tint
-                modifier = Modifier.size(32.dp) // Set icon size
+                tint = if (isSelected) Color.White else Color(0xFFFC610F),
+                modifier = Modifier.size(32.dp)
             )
         }
-        // Text below the container
+
         Text(
             text = text,
             color = if (isSelected) Color.Black else Color.Gray,
             fontSize = 14.sp,
             textAlign = TextAlign.Center,
-            modifier = Modifier.padding(top = 4.dp) // Add spacing between icon and text
+            modifier = Modifier.padding(top = 4.dp)
         )
     }
 }
+@SuppressLint("SuspiciousIndentation")
 @Composable
-fun FoodCard(ingredient: Ingredient) {
-    var count by remember { mutableStateOf(0) }
-
+fun FoodCard(ingredient: Ingredient , listOfIngredients :MutableSet<IngredientRecipe> = mutableSetOf<IngredientRecipe>() ,  onIngredientsUpdated: (MutableSet<IngredientRecipe>) -> Unit) {
+    val currentIngredientRecipe = listOfIngredients.find { it.ingredient == ingredient }
+    var count by remember { mutableStateOf(currentIngredientRecipe?.qte ?: 0) }
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -189,10 +230,10 @@ fun FoodCard(ingredient: Ingredient) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxSize()
             ) {
-                // Image placeholder
+
                 Spacer(Modifier.height(12.dp))
                 AsyncImage(
-                    model = "http://192.168.43.232:3000/uploads/"+ingredient.image, // Replace with your drawable
+                    model = "http://192.168.43.232:3000/uploads/"+ingredient.image,
                     contentDescription = null,
                     modifier = Modifier
                         .size(80.dp)
@@ -202,7 +243,6 @@ fun FoodCard(ingredient: Ingredient) {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Item name
                 Text(
                     text = ingredient.name,
                     fontWeight = FontWeight.Bold,
@@ -221,7 +261,6 @@ fun FoodCard(ingredient: Ingredient) {
                 )
             }
 
-            // Counter buttons at the bottom-right
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
@@ -229,9 +268,8 @@ fun FoodCard(ingredient: Ingredient) {
                     .padding(0.dp)
                     .align(Alignment.BottomEnd)
                     .offset(x = 8.dp, y = 8.dp)
-                    .animateContentSize() // Smoothly handle size changes
+                    .animateContentSize()
             ) {
-                // Show "-" button when count > 0
                 AnimatedVisibility(visible = count > 0) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -244,31 +282,41 @@ fun FoodCard(ingredient: Ingredient) {
                             .padding(4.dp)
                     ) {
                         IconButton(
-                            onClick = { if (count > 0) count-- },
+                            onClick = {
+                                if (count > 0) {
+                                    count--
+                                    val updatedList = listOfIngredients.toMutableSet()
+                                    if (count > 0) {
+                                        updatedList.add(IngredientRecipe(ingredient, count))
+                                    } else {
+                                        updatedList.removeIf { it.ingredient == ingredient }
+                                    }
+                                    onIngredientsUpdated(updatedList)
+
+
+
+                                }  },
                             modifier = Modifier
-                                // .background(Color(0xFFFF5722), RectangleShape)
+
                                 .clip(RoundedCornerShape(8.dp))
                                 .size(24.dp)
                         ) {
                             Icon(
-                                painter = painterResource(id = R.drawable.arrow_back), // Replace with your drawable
+                                painter = painterResource(id = R.drawable.ic_minus),
                                 contentDescription = "Decrease",
                                 tint = Color.White
                             )
                         }
                         Spacer(Modifier.height(7.dp))
-                        // Show count
                         Text(
                             text = "$count",
                             style = MaterialTheme.typography.bodyLarge,
                             fontSize = 16.sp,
                             color = Color.White,
-                         //   modifier = Modifier.padding(vertical = 4.dp).background(Color(0xFFFF5722))
                         )
                     }
                 }
 
-                // Always show "+" button
                 Column( modifier = Modifier
                     .background(
                         Color(0xFFFF5722),
@@ -277,41 +325,58 @@ fun FoodCard(ingredient: Ingredient) {
 
 
                     IconButton(
-                        onClick = { count++ },
+                        onClick = { count++
+
+                            val updatedList = listOfIngredients.toMutableSet()
+                            var index = updatedList.indexOf(IngredientRecipe(ingredient, count))
+                            if(index != -1)
+                            {
+                                updatedList.elementAt(index).qte = count
+                            }
+                            else{
+                                updatedList.add(IngredientRecipe(ingredient, count))
+                                onIngredientsUpdated(updatedList)
+
+                            }
+
+                                  },
                         modifier = Modifier
                             .background(
                                 color = Color(0xFFFF5722),
                                 shape = if (count <= 0) RoundedCornerShape(8.dp) else RectangleShape
                             )
                             .padding(4.dp)
-                            .size(24.dp) // Size of the IconButton
+                            .size(24.dp)
                     ){
                         Icon(
-                            painter = painterResource(id = R.drawable.favorite), // Replace with your drawable
+                            painter = painterResource(id = R.drawable.ic_plus), // Replace with your drawable
                             contentDescription = "Increase",
                             tint = Color.White
                         )
                     }
                 }
+
+
             }
         }
     }
 }
 
 @Composable
-fun CardGridExample(ingredients:List<Ingredient>) {
-   // val items = listOf(Ingredient("1","Tomato","","","Fruit")) // Example items
+fun CardGridExample(ingredients:List<Ingredient> , listOfIngredients: MutableSet<IngredientRecipe>,onIngredientsUpdated: (MutableSet<IngredientRecipe>) -> Unit) {
 
     LazyVerticalGrid(
-        columns = GridCells.Fixed(2), // 2 columns
+        columns = GridCells.Fixed(2),
         modifier = Modifier
             .fillMaxSize()
-            .padding(8.dp),
+            .padding(bottom = 64.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(ingredients.size) { item ->
-            FoodCard(ingredient = ingredients[item])
+            FoodCard(ingredient = ingredients[item] ,
+                listOfIngredients,
+                onIngredientsUpdated)
         }
     }
 }

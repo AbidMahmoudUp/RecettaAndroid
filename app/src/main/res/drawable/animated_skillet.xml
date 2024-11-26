@@ -1,0 +1,14 @@
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/skillet">
+
+    <target
+        android:name="smoke1"
+        android:animation="@animator/fade" />
+
+    <target
+        android:name="smoke2"
+        android:animation="@animator/fade" />
+    <target
+        android:name="smoke3"
+        android:animation="@animator/fade" />
+</animated-vector>

@@ -5,6 +5,7 @@ import Trnity.ITP.Recetta.Model.entities.Inventory
 import Trnity.ITP.Recetta.Model.entities.Recipe
 import Trnity.ITP.Recetta.Model.repositories.RecipeRepository
 import Trnity.ITP.Recetta.R
+import okhttp3.ResponseBody
 
 class RecipeRepositoryImplementation(private val recipeApiService: RecipeApiService) : RecipeRepository {
 
@@ -12,7 +13,11 @@ class RecipeRepositoryImplementation(private val recipeApiService: RecipeApiServ
         return recipeApiService.getRecipe(id)
     }
 
-   override suspend fun getAllRecipe(): List<Recipe> {
+    override suspend fun generateRecipe(request : Map<String, String> ) :  Set<Recipe>{
+        return recipeApiService.generateRecipes(request)
+    }
+
+    override suspend fun getAllRecipe(): List<Recipe> {
         return recipeApiService.getAllRecipes()
     }
 }

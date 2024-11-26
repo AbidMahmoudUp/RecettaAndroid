@@ -48,7 +48,7 @@ fun RecipeIngredientCard ( recipeIngredient: IngredientRecipe){
                 .background(Color.Transparent),
             colors = CardDefaults.cardColors(Color.Transparent)
         ) {
-            AsyncImage(model = directImageUrl , contentDescription = "Test" ,
+            AsyncImage("http://192.168.43.232:3000/uploads/"+ recipeIngredient.ingredient?.image , contentDescription = "Test" ,
                 Modifier
                     .padding(0.dp)
                     .size(70.dp))

@@ -11,5 +11,6 @@ data class Recipe(
     @SerializedName("cookingTime") val cookingTime: String = "",
     @SerializedName("energy") val energy: String = "",
     @SerializedName("rating") val rating: String = "",
-    @SerializedName("ingredients") val ingredients: List<IngredientRecipe> = emptyList() // Use "ingrediants"
+    @SerializedName("ingredients") val ingredients: List<IngredientRecipe> = emptyList(),
+    @SerializedName("instructions") val instructions : List<String> = emptyList()
 )
