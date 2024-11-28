@@ -18,6 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -32,8 +33,8 @@ class RecipeViewModel @Inject constructor(
     val generatedRecipes: LiveData<List<Recipe>> get() = _generatedRecipes
     private val _recipe = MutableStateFlow(Recipe())
     val recipe: StateFlow<Recipe> = _recipe
-
-    // Fetch a single recipe by ID
+    private val _isLoading = MutableLiveData(false)
+    val isLoading: LiveData<Boolean> = _isLoading
     suspend fun fetchRecipe(id: String) {
         try {
             val recipe = repository.getRecipe(id)
@@ -67,12 +68,7 @@ class RecipeViewModel @Inject constructor(
 
     @SuppressLint("SuspiciousIndentation")
     fun generateRecipes(ingredients: Set<IngredientRecipe>) {
-        val firstPartOfRequest = "JSON RESPONSE ONLY for recipes using ONLY these ingredients: "
-
-      /*  val secondPartOfRequest = ingredients.joinToString(separator = ", ", postfix = ".") {
-            "${it.qte} ${it.ingredient?.name}"
-        }*/
-
+        _isLoading.postValue(true)
         val requestContent = ingredients.toString()
         var gson = Gson()
         var jsonString = gson.toJson(ingredients)
@@ -85,14 +81,17 @@ class RecipeViewModel @Inject constructor(
             try {
 
                 val responseBody = repository.generateRecipe(requestBody)
-               // val rawResponse = responseBody.string()
-              //  Log.d("Raw AI Response", "Response: $rawResponse")
-              //  println("Raw AI Response: $rawResponse")
-                  _generatedRecipes.postValue(responseBody.toList())
-                Log.d("AI Request", "Request: $requestBody")
-                Log.d("AI Response", "Response: $responseBody")
+                 withContext(Dispatchers.Main) {
+                     _generatedRecipes.postValue(responseBody.toList())
+               //      Log.d("AI Request", "Request: $requestBody")
+                //     Log.d("AI Response", "Response: $responseBody")
+                     _isLoading.value = false
+                 }
             } catch (e: Exception) {
-                _generatedRecipes.postValue(emptyList<Recipe>())
+                withContext(Dispatchers.Main) {
+                    _generatedRecipes.postValue(emptyList())
+                    _isLoading.postValue(false)
+                }
                 Log.e("AI Error", "Exception occurred: ${e.message}")
             }
         }

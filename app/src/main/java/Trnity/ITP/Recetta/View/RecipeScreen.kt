@@ -20,8 +20,15 @@ import Trnity.ITP.Recetta.ui.theme.Transparent
 import Trnity.ITP.Recetta.ui.theme.White
 import android.util.Log
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,9 +46,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -81,21 +92,24 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.text.font.FontWeight.Companion.Medium
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import kotlin.math.max
 import kotlin.math.min
 
 
 @Composable
-fun RecipeScreen(recipeId: String ,viewModel: RecipeViewModel = hiltViewModel()) {
-
+fun RecipeScreen(recipeId: String ,navController: NavController,inventoryViewModel: InventoryViewModel = hiltViewModel(),viewModel: RecipeViewModel = hiltViewModel()) {
+    inventoryViewModel.clearErrorMessage()
 
 // ----------------------------
     LaunchedEffect(recipeId) {
@@ -108,68 +122,11 @@ fun RecipeScreen(recipeId: String ,viewModel: RecipeViewModel = hiltViewModel())
     println("--------------------------------------- TestRecipeScreen ------------------------------------------------------")
     println(recipe)
     Box(Modifier.padding(0.dp,0.dp,0.dp,80.dp)) {
-        Content(recipe, scrollState)
+        Content(recipe, scrollState,inventoryViewModel,navController)
         ParallaxToolbar(recipe, scrollState)
     }
 }
-// Compose the given content with a drop shadow on all
-// non-transparent pixels
-@Composable fun Shadowed(modifier: Modifier, color: Color, offsetX: Dp, offsetY: Dp, blurRadius: Dp, content: @Composable () -> Unit) {
-    val density = LocalDensity.current
-    val offsetXPx = with(density) { offsetX.toPx() }.toInt()
-    val offsetYPx = with(density) { offsetY.toPx() }.toInt()
-    val blurRadiusPx = kotlin.math.ceil(with(density) {
-        blurRadius.toPx()
-    }).toInt()
 
-    // Modifier to render the content in the shadow color, then
-    // blur it by blurRadius
-    val shadowModifier = Modifier
-        .drawWithContent {
-            val matrix = shadowColorMatrix(color)
-            val filter = ColorFilter.colorMatrix(matrix)
-            val paint = Paint().apply {
-                colorFilter = filter
-            }
-            drawIntoCanvas { canvas ->
-                canvas.saveLayer(Rect(0f, 0f, size.width, size.height), paint)
-                drawContent()
-                canvas.restore()
-            }
-        }
-        .blur(radius = blurRadius, BlurredEdgeTreatment.Unbounded)
-        .padding(all = blurRadius) // Pad to prevent clipping blur
-
-    // Layout based solely on the content, placing shadow behind it
-    Layout(modifier = modifier, content = {
-        // measurables[0] = content, measurables[1] = shadow
-        content()
-        Box(modifier = shadowModifier) { content() }
-    }) { measurables, constraints ->
-        // Allow shadow to go beyond bounds without affecting layout
-        val contentPlaceable = measurables[0].measure(constraints)
-        val shadowPlaceable = measurables[1].measure(Constraints(maxWidth = contentPlaceable.width + blurRadiusPx * 2, maxHeight = contentPlaceable.height + blurRadiusPx * 2))
-        layout(width = contentPlaceable.width, height = contentPlaceable.height) {
-            shadowPlaceable.placeRelative(x = offsetXPx - blurRadiusPx, y = offsetYPx - blurRadiusPx)
-            contentPlaceable.placeRelative(x = 0, y = 0)
-        }
-    }
-}
-
-// Return a color matrix with which to paint our content
-// as a shadow of the given color
-private fun shadowColorMatrix(color: Color): ColorMatrix {
-    return ColorMatrix().apply {
-        set(0, 0, 0f) // Do not preserve original R
-        set(1, 1, 0f) // Do not preserve original G
-        set(2, 2, 0f) // Do not preserve original B
-
-        set(0, 4, color.red * 255) // Use given color's R
-        set(1, 4, color.green * 255) // Use given color's G
-        set(2, 4, color.blue * 255) // Use given color's B
-        set(3, 3, color.alpha) // Multiply by given color's alpha
-    }
-}
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ParallaxToolbar(recipe: Recipe, scrollState: LazyListState) {
@@ -305,14 +262,14 @@ fun CircularButton(
 
 
 @Composable
-fun Content(recipe: Recipe, scrollState: LazyListState) {
+fun Content(recipe: Recipe, scrollState: LazyListState,viewModel: InventoryViewModel ,navController: NavController) {
     LazyColumn(contentPadding = PaddingValues(top = AppBarExpendedHeight), state = scrollState) {
         item {
             BasicInfo(recipe)
             Description(recipe)
             ServingCalculator()
             IngredientsHeader(recipe)
-            ShoppingListButton()
+            ShoppingListButton(recipe,viewModel,navController)
             Reviews(recipe)
             Images()
         }
@@ -350,7 +307,6 @@ fun Reviews(recipe: Recipe) {
     ) {
         Column {
             Text(text = "Reviews", fontWeight = Bold)
-          //  Text(recipe.reviews, color = DarkGray)
         }
         Button(
             onClick = { /*TODO*/ },
@@ -370,10 +326,15 @@ fun Reviews(recipe: Recipe) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ShoppingListButton() {
+fun ShoppingListButton(recipe: Recipe , viewModel: InventoryViewModel,navController: NavController ) {
+    val errorMessage by viewModel.errorMessage
+
     Button(
-        onClick = { /*TODO*/ },
+        onClick = {
+                  viewModel.updateInventoryForRequieredRecipe(recipe.ingredients.toSet())
+        },
         elevation = null,
         shape = Shapes.small,
         colors = ButtonDefaults.buttonColors(
@@ -383,7 +344,91 @@ fun ShoppingListButton() {
             .fillMaxWidth()
             .padding(16.dp)
     ) {
-        Text(text = "Add to shopping list", modifier = Modifier.padding(8.dp))
+        Text(text = "Start Cooking Now ", modifier = Modifier.padding(8.dp))
+    }
+    if(errorMessage != null)
+    {
+        var showDialog by remember { mutableStateOf(errorMessage != null) }
+        AnimatedVisibility(
+            visible = showDialog,
+            enter = fadeIn(animationSpec = tween(durationMillis = 300)) + slideInVertically(
+                initialOffsetY = { it }, // Start from below the screen
+                animationSpec = tween(durationMillis = 300)
+            ),
+            exit = fadeOut(animationSpec = tween(durationMillis = 300)) + slideOutVertically(
+                targetOffsetY = { it }, // Slide down to dismiss
+                animationSpec = tween(durationMillis = 300)
+            )
+        ) {
+            AlertDialog(
+                onDismissRequest = { viewModel.clearErrorMessage() },
+                content = {
+                    Box(contentAlignment = Alignment.Center) {
+                        // Background and content of the alert dialog
+                        Column(
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .background(Color.White, shape = RoundedCornerShape(8.dp))
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.alert_assets),
+                                contentDescription = ""
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = errorMessage.toString(),
+                                style = MaterialTheme.typography.bodyMedium,
+                                textAlign = TextAlign.Start,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF2F2F2F),
+                                modifier = Modifier.padding(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            Row(horizontalArrangement = Arrangement.End) {
+                                Button(
+                                    modifier = Modifier.padding(8.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(
+                                            0xFFFC610F
+                                        )
+                                    ),
+                                    shape = RoundedCornerShape(8.dp),
+                                    onClick = {
+                                        navController.navigate("AddIngrediant") {
+                                            popUpTo(navController.graph.startDestinationId) {
+                                                saveState = true
+                                            }
+                                            //println("currentRoute is : "+item.route)
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
+                                    }
+                                ) {
+                                    Text("Add the needed ingredients", textAlign = TextAlign.Center)
+                                }
+                            }
+                        }
+
+
+                        Image(
+                            painter = painterResource(id = R.drawable.close_icon),
+                            contentDescription = "",
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                                .padding(8.dp)
+                                .offset(x = -10.dp, y = -160.dp)
+                                .clickable { viewModel.clearErrorMessage()
+                                                showDialog = false}
+
+                        )
+                    }
+                }
+            )
+        }
+
     }
 
 }
@@ -392,7 +437,7 @@ fun ShoppingListButton() {
 fun IngredientsList(recipe: Recipe) {
     val ingredients = recipe.ingredients
 
-    // Display a grid of RecipeIngredientCard for each ingredient
+
     EasyGrid(nColumns = 3, items = ingredients) { ingredientRecipe ->
         RecipeIngredientCard(recipeIngredient = ingredientRecipe)
     }
@@ -462,26 +507,26 @@ fun IngredientsHeader(recipe: Recipe) {
 }
 @Composable
 fun StepsList(steps: List<String>) {
-    // Extract and process the steps from the first string
     val textSteps = steps[0].split(".").map { it.trim() }.filter { it.isNotEmpty() }
 
     Column(Modifier.padding(16.dp)) {
         textSteps.forEach { step ->
             Row(
-                verticalAlignment = Alignment.CenterVertically, // Align icon and text vertically centered
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(vertical = 8.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Default.CheckCircle, // Replace with your preferred icon
+                    imageVector = Icons.Default.CheckCircle,
                     contentDescription = "Instruction Icon",
-                    modifier = Modifier.size(20.dp), // Adjust icon size
-                    tint = Color(0xFFFC610F) // Use a theme color or customize
+                    modifier = Modifier.size(20.dp),
+                    tint = Color(0xFFFC610F)
                 )
-                Spacer(modifier = Modifier.width(8.dp)) // Space between icon and text
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = step,
                     style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.weight(1f) // Ensure text takes available space
+                    modifier = Modifier.weight(1f)
+
                 )
             }
         }

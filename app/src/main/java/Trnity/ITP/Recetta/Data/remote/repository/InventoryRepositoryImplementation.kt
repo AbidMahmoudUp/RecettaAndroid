@@ -14,5 +14,9 @@ class InventoryRepositoryImplementation(private  val inventoryApiService : Inven
         return inventoryApiService.getInventory(id)
     }
 
+    override suspend fun startCooking(id: String, request: UpdateUserInventory): Inventory {
+        return inventoryApiService.startCooking(id,request)
+    }
+
 
 }

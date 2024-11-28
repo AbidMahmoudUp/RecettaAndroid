@@ -13,6 +13,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -29,6 +30,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -38,6 +40,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -55,8 +58,8 @@ import androidx.navigation.NavController
 @SuppressLint("UnrememberedMutableInteractionSource")
 @Composable
 fun GenerateRecipeScreen(navController: NavController,recipeViewModel : RecipeViewModel = hiltViewModel() ,ingredientViewModel: IngredientViewModel = hiltViewModel()) {
-
-    val screenHeight = LocalConfiguration.current.screenHeightDp.dp
+    val isLoading by recipeViewModel.isLoading.observeAsState(false)
+    val generatedRecipes by recipeViewModel.generatedRecipes.observeAsState(emptyList())
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
     val ingredients by ingredientViewModel.ingredients.collectAsState()
     val categories = listOf("All", "Fruit", "Vegetables", "Meat", "Nuts")
@@ -70,6 +73,26 @@ fun GenerateRecipeScreen(navController: NavController,recipeViewModel : RecipeVi
     fun doesMatchSearchQuery(ingredientName: String, query: String): Boolean {
         return ingredientName.contains(query, ignoreCase = true)
     }
+    Box(modifier = Modifier.fillMaxSize() ,contentAlignment = Alignment.Center )
+    {
+        if(isLoading)
+        {
+
+            navController.navigate("LoadingPage") {
+                popUpTo(navController.graph.startDestinationId) {
+                    saveState = true
+                }
+                //println("currentRoute is : "+item.route)
+                launchSingleTop = true
+                restoreState = true
+            }
+           // RecipeGenerationLoadingScreen(navController)
+        }
+        else if (generatedRecipes.isNotEmpty()){
+                Log.d("Recipes Response",generatedRecipes.toString())
+        }else{
+            Text("No recipes Generated")
+        }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -163,12 +186,10 @@ fun GenerateRecipeScreen(navController: NavController,recipeViewModel : RecipeVi
                     listIngredientQte = updatedList.toMutableSet()
                 })
 
-            Button(modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(Color(0xFFFC610F))
-                ,onClick = { /*TODO*/ }) {
-                Text(text = "Add Ingredients")
-            }
+
+
         }
 
     }
+}
 }

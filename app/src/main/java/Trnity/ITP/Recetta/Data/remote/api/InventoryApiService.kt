@@ -15,4 +15,7 @@ interface InventoryApiService {
 
     @PATCH("inventory/addIngredients/{id}")
     suspend fun updateInventory(@Path("id") id: String , @Body request:  UpdateUserInventory): Inventory
+
+    @PATCH("inventory/substractIngredients/{id}")
+    suspend fun startCooking(@Path("id")id:String , @Body request: UpdateUserInventory) :Inventory
 }

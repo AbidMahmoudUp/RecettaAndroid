@@ -1,6 +1,7 @@
 import Trnity.ITP.Recetta.Model.entities.Recipe
 import Trnity.ITP.Recetta.R
-import Trnity.ITP.Recetta.View.Shadowed
+import Trnity.ITP.Recetta.Utils.Shadowed
+
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.infiniteRepeatable

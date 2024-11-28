@@ -5,6 +5,8 @@ import Trnity.ITP.Recetta.Model.entities.IngredientRecipe
 import Trnity.ITP.Recetta.Model.entities.Inventory
 import Trnity.ITP.Recetta.Model.repositories.InventoryRepository
 import android.util.Log
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
@@ -14,6 +16,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import org.json.JSONObject
+import retrofit2.HttpException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -26,7 +30,8 @@ constructor(
     val inventory: StateFlow<Inventory> = _inventory
     private val _isLoading  = MutableStateFlow(false)
     val isLoading = _isLoading.asStateFlow()
-
+    private val _errorMessage  = mutableStateOf<String?>(null)
+    val errorMessage : State<String?> get() = _errorMessage
     // Automatically fetch ingredients when ViewModel is created
     init {
         println("TEST-----------------------------------------------------------------------")
@@ -60,6 +65,7 @@ constructor(
     }
 
     fun updateInventory(ingredients: Set<IngredientRecipe>) {
+
         val requestBody = UpdateUserInventory(ingredients)
         viewModelScope.launch {
             try {
@@ -69,6 +75,37 @@ constructor(
                 Log.e("Update Error", e.message ?: "Unknown error")
             }
         }
+    }
+
+    fun updateInventoryForRequieredRecipe(ingredients: Set<IngredientRecipe>) {
+        _errorMessage.value = null
+        val requestBody = UpdateUserInventory(ingredients)
+        viewModelScope.launch {
+            try {
+                Log.d("Request Body",requestBody.toString())
+                val responseBody = repository.startCooking("6730c43b986803e32821be1f", requestBody)
+                Log.d("Update Response", responseBody.toString())
+                _errorMessage.value = null
+            } catch (e: HttpException) { // Catch HTTP exceptions
+                val errorMessage = try {
+                    // Parse the error body if available
+                    e.response()?.errorBody()?.string()?.let { errorBody ->
+                        JSONObject(errorBody).optString("message", "Unknown error occurred")
+                    } ?: "Unknown error occurred"
+                } catch (jsonException: Exception) {
+                    "Unknown error occurred"
+                }
+                Log.e("Update Error", errorMessage)
+                _errorMessage.value = errorMessage // Update the state with the error message
+            } catch (jsonException: Exception) {
+                Log.e("JSON Parsing Error", jsonException.message ?: "Unknown JSON error")
+                _errorMessage.value =  "Unknown error occurred"
+            }
+    }
+    }
+
+    fun clearErrorMessage(){
+        _errorMessage.value = null
     }
 
 }

@@ -1,5 +1,6 @@
 package Trnity.ITP.Recetta.View.Components
 
+import GeneratedRecipeListScreen
 import HomeScreen
 import Trnity.ITP.Recetta.Model.entities.Recipe
 import Trnity.ITP.Recetta.View.AddIngredient
@@ -10,6 +11,7 @@ import Trnity.ITP.Recetta.View.FavoriteScreen
 import Trnity.ITP.Recetta.View.GenerateRecipeScreen
 import Trnity.ITP.Recetta.View.InventoryScreen
 import Trnity.ITP.Recetta.View.ProfileScreen
+import Trnity.ITP.Recetta.View.RecipeGenerationLoadingScreen
 import Trnity.ITP.Recetta.View.RecipeScreen
 import android.os.Build
 import android.util.Log
@@ -78,6 +80,8 @@ fun MainNavigation(navController: NavHostController) {
         composable(NavItem.Inventory.route) {InventoryScreen(navController)  }
         composable("AddIngrediant") { AddIngredient(navController = navController)  }
         composable("GenerateRecipe") { GenerateRecipeScreen(navController = navController)  }
+        composable("LoadingPage") { RecipeGenerationLoadingScreen(navController = navController)  }
+        composable("GeneratedList") { GeneratedRecipeListScreen(navController = navController)  }
 
         composable(
             "recipeScreen/{recipeId}",
@@ -87,7 +91,7 @@ fun MainNavigation(navController: NavHostController) {
             Log.d("MainNavigation", "Navigating to RecipeScreen with recipeId: $recipeId")
 
             if (recipeId != null) {
-                RecipeScreen(recipeId = recipeId)
+                RecipeScreen(recipeId = recipeId, navController = navController)
 
             }
         }
