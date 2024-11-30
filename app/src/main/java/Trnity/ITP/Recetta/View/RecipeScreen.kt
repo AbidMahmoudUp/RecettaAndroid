@@ -1,0 +1,596 @@
+package Trnity.ITP.Recetta.View
+
+
+import Trnity.ITP.Recetta.Model.entities.Recipe
+import Trnity.ITP.Recetta.R
+import Trnity.ITP.Recetta.View.Components.RecipeIngredientCard
+import Trnity.ITP.Recetta.ViewModel.InventoryViewModel
+import Trnity.ITP.Recetta.ViewModel.RecipeViewModel
+import Trnity.ITP.Recetta.ui.theme.AppBarCollapsedHeight
+import Trnity.ITP.Recetta.ui.theme.AppBarExpendedHeight
+import Trnity.ITP.Recetta.ui.theme.DarkGray
+import Trnity.ITP.Recetta.ui.theme.Gray
+import Trnity.ITP.Recetta.ui.theme.LightGray
+import Trnity.ITP.Recetta.ui.theme.Pink
+import Trnity.ITP.Recetta.ui.theme.AuthShapes
+import Trnity.ITP.Recetta.ui.theme.Transparent
+import Trnity.ITP.Recetta.ui.theme.White
+import androidx.annotation.DrawableRes
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontWeight.Companion.Bold
+import androidx.compose.ui.text.font.FontWeight.Companion.Medium
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import kotlin.math.max
+import kotlin.math.min
+
+
+@Composable
+fun RecipeScreen(recipeId: String ,navController: NavController,inventoryViewModel: InventoryViewModel = hiltViewModel(),viewModel: RecipeViewModel = hiltViewModel()) {
+    inventoryViewModel.clearErrorMessage()
+
+// ----------------------------
+    LaunchedEffect(recipeId) {
+        viewModel.fetchRecipe(recipeId)
+    }
+
+    val scrollState = rememberLazyListState()
+    val recipe = viewModel.recipe.collectAsState().value
+
+    println("--------------------------------------- TestRecipeScreen ------------------------------------------------------")
+    println(recipe)
+    Box(Modifier.padding(0.dp,0.dp,0.dp,80.dp)) {
+        Content(recipe, scrollState,inventoryViewModel,navController)
+        ParallaxToolbar(recipe, scrollState)
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ParallaxToolbar(recipe: Recipe, scrollState: LazyListState) {
+    val directImageUrl = recipe.imageRecipe.replace("https://drive.google.com/file/d/", "https://drive.google.com/uc?export=download&id=")
+        .replace("/view?usp=drive_link", "")
+    val imageHeight = AppBarExpendedHeight - AppBarCollapsedHeight
+    val maxOffset = with(LocalDensity.current) { imageHeight.roundToPx() }
+    val offset = min(scrollState.firstVisibleItemScrollOffset, maxOffset)
+    val offsetProgress = max(0f, offset * 3f - 2f * maxOffset) / maxOffset
+
+    // Convert imageHeight to pixels (Float) for gradient
+    val imageHeightPx = with(LocalDensity.current) { imageHeight.toPx() }
+
+    Box {
+        // Parallax Image with Gradient Overlay
+        Box(
+            modifier = Modifier
+                .height(imageHeight)
+                .offset { IntOffset(x = 0, y = -offset) }
+                .graphicsLayer { alpha = 1f - offsetProgress }
+        ) {
+            AsyncImage(
+                model = directImageUrl,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+
+            // Gradient overlay
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(Transparent, White),
+                            startY = imageHeightPx * 0.4f,
+                            endY = imageHeightPx
+                        )
+                    )
+            )
+
+            // Category label
+            Row(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.Bottom
+            ) {
+                Text(
+                    text = recipe.category ?: "Category", // Default if category is null
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier
+                        .clip(AuthShapes.small)
+                        .background(LightGray)
+                        .padding(vertical = 6.dp, horizontal = 16.dp)
+                )
+            }
+        }
+
+        // Title and icon row positioned below the image
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .offset {
+                    IntOffset(
+                        x = 0,
+                        y = maxOffset - offset
+                    )
+                } // Offset to place below the image
+                .background(White)
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            // Centered Title with Navigation and Favorite Icons
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = { /* Action */ }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_arrow_back),
+                        contentDescription = null,
+                        tint = Gray
+                    )
+                }
+
+                // Title centered in the middle
+                Text(
+                    text = recipe.title ?: "Recipe Title", // Default if title is null
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp) // Space between icons and title
+                        .scale(1f - 0.15f * offsetProgress)
+                )
+
+                IconButton(onClick = { /* Action */ }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_favorite),
+                        contentDescription = null,
+                        tint = Gray
+                    )
+                }
+            }
+        }
+
+    }
+}
+
+
+@Composable
+fun CircularButton(
+    @DrawableRes iconResouce: Int,
+    color: Color = Gray,
+    onClick: () -> Unit = {}
+) {
+    Button(
+        onClick = onClick,
+        contentPadding = PaddingValues(),
+        shape = AuthShapes.small,
+        colors = ButtonDefaults.buttonColors(containerColor = White, contentColor = color),
+        elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp), // Specify elevation here
+        modifier = Modifier
+            .width(38.dp)
+            .height(38.dp)
+    ) {
+        Icon(painterResource(id = iconResouce), contentDescription = null)
+    }
+}
+
+
+@Composable
+fun Content(recipe: Recipe, scrollState: LazyListState,viewModel: InventoryViewModel ,navController: NavController) {
+    LazyColumn(contentPadding = PaddingValues(top = AppBarExpendedHeight), state = scrollState) {
+        item {
+            BasicInfo(recipe)
+            Description(recipe)
+            ServingCalculator()
+            IngredientsHeader(recipe)
+            ShoppingListButton(recipe,viewModel,navController)
+            Reviews(recipe)
+            Images()
+        }
+    }
+}
+
+@Composable
+fun Images() {
+    Row(Modifier.padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+        Image(
+            painter = painterResource(id = R.drawable.strawberry_pie_2),
+            contentDescription = null,
+            modifier = Modifier
+                .weight(1f)
+                .clip(AuthShapes.small)
+        )
+        Spacer(modifier = Modifier.weight(0.1f))
+        Image(
+            painter = painterResource(id = R.drawable.strawberry_pie_3),
+            contentDescription = null,
+            modifier = Modifier
+                .weight(1f)
+                .clip(AuthShapes.small)
+        )
+    }
+}
+
+@Composable
+fun Reviews(recipe: Recipe) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Column {
+            Text(text = "Reviews", fontWeight = Bold)
+        }
+        Button(
+            onClick = { /*TODO*/ },
+            elevation = null,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Transparent, contentColor = Pink
+            )
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("See all")
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_arrow_right),
+                    contentDescription = null
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ShoppingListButton(recipe: Recipe , viewModel: InventoryViewModel,navController: NavController ) {
+    val errorMessage by viewModel.errorMessage
+
+    Button(
+        onClick = {
+                  viewModel.updateInventoryForRequieredRecipe(recipe.ingredients.toSet())
+        },
+        elevation = null,
+        shape = AuthShapes.small,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = LightGray,
+            contentColor = Color.Black
+        ), modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        Text(text = "Start Cooking Now ", modifier = Modifier.padding(8.dp))
+    }
+    if(errorMessage != null)
+    {
+        var showDialog by remember { mutableStateOf(errorMessage != null) }
+        AnimatedVisibility(
+            visible = showDialog,
+            enter = fadeIn(animationSpec = tween(durationMillis = 300)) + slideInVertically(
+                initialOffsetY = { it }, // Start from below the screen
+                animationSpec = tween(durationMillis = 300)
+            ),
+            exit = fadeOut(animationSpec = tween(durationMillis = 300)) + slideOutVertically(
+                targetOffsetY = { it }, // Slide down to dismiss
+                animationSpec = tween(durationMillis = 300)
+            )
+        ) {
+            AlertDialog(
+                onDismissRequest = { viewModel.clearErrorMessage() },
+                content = {
+                    Box(contentAlignment = Alignment.Center) {
+                        // Background and content of the alert dialog
+                        Column(
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .background(Color.White, shape = RoundedCornerShape(8.dp))
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.alert_assets),
+                                contentDescription = ""
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = errorMessage.toString(),
+                                style = MaterialTheme.typography.bodyMedium,
+                                textAlign = TextAlign.Start,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF2F2F2F),
+                                modifier = Modifier.padding(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            Row(horizontalArrangement = Arrangement.End) {
+                                Button(
+                                    modifier = Modifier.padding(8.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(
+                                            0xFFFC610F
+                                        )
+                                    ),
+                                    shape = RoundedCornerShape(8.dp),
+                                    onClick = {
+                                        navController.navigate("AddIngrediant") {
+                                            popUpTo(navController.graph.startDestinationId) {
+                                                saveState = true
+                                            }
+                                            //println("currentRoute is : "+item.route)
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
+                                    }
+                                ) {
+                                    Text("Add the needed ingredients", textAlign = TextAlign.Center)
+                                }
+                            }
+                        }
+
+
+                        Image(
+                            painter = painterResource(id = R.drawable.close_icon),
+                            contentDescription = "",
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                                .padding(8.dp)
+                                .offset(x = -10.dp, y = -160.dp)
+                                .clickable { viewModel.clearErrorMessage()
+                                                showDialog = false}
+
+                        )
+                    }
+                }
+            )
+        }
+
+    }
+
+}
+
+@Composable
+fun IngredientsList(recipe: Recipe) {
+    val ingredients = recipe.ingredients
+
+
+    EasyGrid(nColumns = 3, items = ingredients) { ingredientRecipe ->
+        RecipeIngredientCard(recipeIngredient = ingredientRecipe)
+    }
+}
+
+@Composable
+fun <T> EasyGrid(nColumns: Int, items: List<T>, content: @Composable (T) -> Unit) {
+    Column(Modifier.padding(16.dp)) {
+        for (i in items.indices step nColumns) {
+            Row {
+                for (j in 0 until nColumns) {
+                    if (i + j < items.size) {
+                        Box(
+                            contentAlignment = Alignment.TopCenter,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            content(items[i + j])
+                        }
+                    } else {
+                        Spacer(Modifier.weight(1f, fill = true))
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun IngredientsHeader(recipe: Recipe) {
+
+    var selectedTab by remember { mutableStateOf("Ingredients") }
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .padding(horizontal = 16.dp, vertical = 16.dp)
+            .clip(AuthShapes.medium)
+            .background(LightGray)
+            .fillMaxWidth()
+            .height(44.dp)
+    ) {
+        TabButton(
+            text = "Ingredients",
+            active = selectedTab == "Ingredients",
+            modifier = Modifier.weight(1f),
+            onClick = { selectedTab = "Ingredients" }
+        )
+
+        TabButton(
+            text = "Steps",
+            active = selectedTab == "Steps",
+            modifier = Modifier.weight(1f),
+            onClick = { selectedTab = "Steps" }
+        )
+
+    }
+      when (selectedTab) {
+           "Ingredients" -> {
+               // Display the Ingredients list
+               IngredientsList(recipe = recipe)
+           }
+           "Steps" -> {
+               // Display Steps content
+               StepsList(steps = recipe.instructions) // Assuming `StepsList` and `recipe.steps` exist
+           }
+       }
+}
+@Composable
+fun StepsList(steps: List<String>) {
+    val textSteps = steps[0].split(".").map { it.trim() }.filter { it.isNotEmpty() }
+
+    Column(Modifier.padding(16.dp)) {
+        textSteps.forEach { step ->
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(vertical = 8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = "Instruction Icon",
+                    modifier = Modifier.size(20.dp),
+                    tint = Color(0xFFFC610F)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = step,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.weight(1f)
+
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun TabButton(text: String, active: Boolean, modifier: Modifier, onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        shape = AuthShapes.medium,
+        modifier = modifier.fillMaxHeight(),
+        elevation = null,
+        colors = if (active) ButtonDefaults.buttonColors(
+            containerColor = Pink,
+            contentColor = White
+        ) else ButtonDefaults.buttonColors(
+            containerColor = LightGray,
+            contentColor = DarkGray
+        )
+    ) {
+        Text(text)
+    }
+}
+
+
+@Composable
+fun ServingCalculator() {
+    var value by remember { mutableStateOf(6) }
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clip(AuthShapes.medium)
+            .background(LightGray)
+            .padding(horizontal = 16.dp)
+    ) {
+        Text(text = "Serving", Modifier.weight(1f), fontWeight = FontWeight.Medium)
+
+        CircularButton(iconResouce = R.drawable.ic_minus, color = Pink) {
+            if (value > 1) value--
+        }
+
+        Text(text = "$value", Modifier.padding(16.dp), fontWeight = FontWeight.Medium)
+
+        CircularButton(iconResouce = R.drawable.ic_plus, color = Pink) {
+            value++
+        }
+    }
+}
+
+
+@Composable
+fun Description(recipe: Recipe) {
+    Text(
+        text = recipe.description,
+        fontWeight = Medium,
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)
+    )
+}
+
+@Composable
+fun BasicInfo(recipe: Recipe) {
+    Row(
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 16.dp)
+    ) {
+        InfoColumn(iconResouce = R.drawable.ic_clock, text = recipe.cookingTime)
+        InfoColumn(iconResouce = R.drawable.ic_flame, text = recipe.energy)
+        InfoColumn(iconResouce = R.drawable.ic_star, text = recipe.rating)
+    }
+}
+@Composable
+fun InfoColumn(@DrawableRes iconResouce: Int, text: String?) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Icon(
+            painter = painterResource(id = iconResouce),
+            contentDescription = null,
+            tint = Pink,
+            modifier = Modifier.height(24.dp)
+        )
+        Text(
+            text = text ?: "N/A", // Default text if null
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
