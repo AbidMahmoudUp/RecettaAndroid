@@ -4,6 +4,7 @@ import Trnity.ITP.Recetta.R
 import Trnity.ITP.Recetta.View.Components.IngrediantInventoryCard
 
 import Trnity.ITP.Recetta.ViewModel.InventoryViewModel
+import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
@@ -16,11 +17,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -38,7 +41,12 @@ fun InventoryScreen(
     val swipeRefreshState = rememberSwipeRefreshState(isRefreshing = isLoading)
     val inventory = viewModel.inventory.collectAsState().value // Collect ingredients state
     println("the ingrediants are :"+ inventory)
-
+     val preferences = LocalContext.current.getSharedPreferences("checkbox", Context.MODE_PRIVATE)
+     val userId = preferences.getString("userId","")
+    LaunchedEffect(Unit )
+    {
+        viewModel.fetchInventory(userId.toString())
+    }
     Column(modifier = Modifier.padding(16.dp)) {
         // Top bar with navigation and title
         Row(
@@ -71,13 +79,15 @@ fun InventoryScreen(
                 color = Color(0xFFF46D42),
                 modifier = Modifier
                     .padding(12.dp, 0.dp, 12.dp, 0.dp)
-                    .clickable { navController.navigate("AddIngrediant"){
-                        popUpTo(navController.graph.startDestinationId) { saveState = true }
-                        //println("currentRoute is : "+item.route)
-                        launchSingleTop = true
-                        restoreState = true
+                    .clickable {
+                        navController.navigate("AddIngrediant") {
+                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                            //println("currentRoute is : "+item.route)
+                            launchSingleTop = true
+                            restoreState = true
 
-                    } }
+                        }
+                    }
             )
         }
 
@@ -85,7 +95,7 @@ fun InventoryScreen(
         if (inventory.ingredients.isEmpty()) {
             Text("No ingredients available")
         } else {
-            SwipeRefresh(state = swipeRefreshState, onRefresh = viewModel::fetchInventory) {
+            SwipeRefresh(state = swipeRefreshState, onRefresh = { viewModel.fetchInventory(userId.toString())}) {
 
 
             LazyColumn(

@@ -4,13 +4,17 @@ import Trnity.ITP.Recetta.Data.remote.Requests.UpdateUserInventory
 import Trnity.ITP.Recetta.Model.entities.IngredientRecipe
 import Trnity.ITP.Recetta.Model.entities.Inventory
 import Trnity.ITP.Recetta.Model.repositories.InventoryRepository
+import android.content.Context
+import android.content.Context.MODE_PRIVATE
+import android.content.SharedPreferences
 import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,6 +23,7 @@ import kotlinx.coroutines.launch
 import org.json.JSONObject
 import retrofit2.HttpException
 import javax.inject.Inject
+
 
 @HiltViewModel
 class InventoryViewModel @Inject
@@ -32,10 +37,13 @@ constructor(
     val isLoading = _isLoading.asStateFlow()
     private val _errorMessage  = mutableStateOf<String?>(null)
     val errorMessage : State<String?> get() = _errorMessage
+  //  val   sharedPreferences = ApplicationContext..getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+   // val preferences = context.getSharedPreferences("checkbox", Context.MODE_PRIVATE)
+   // val userId = preferences.getString("userId","")
     // Automatically fetch ingredients when ViewModel is created
     init {
         println("TEST-----------------------------------------------------------------------")
-        println(fetchInventory())
+        //println(fetchInventory())
     }
     fun loadStuff()
     {
@@ -46,13 +54,13 @@ constructor(
         }
 
     }
-    fun fetchInventory() {
+    fun fetchInventory(id : String) {
         viewModelScope.launch {
             try {
                 // Fetch ingredients from the repository
                 _isLoading.value = true
                 delay(1000)
-                _inventory.value = repository.getInventory("6730c43b986803e32821be1f")
+                _inventory.value = repository.getInventory(id)
 
 
                 _isLoading.value = false
@@ -64,12 +72,12 @@ constructor(
         }
     }
 
-    fun updateInventory(ingredients: Set<IngredientRecipe>) {
+    fun updateInventory( id :String , ingredients: Set<IngredientRecipe>) {
 
         val requestBody = UpdateUserInventory(ingredients)
         viewModelScope.launch {
             try {
-                val responseBody = repository.updateInventory("6730c43b986803e32821be1f", requestBody)
+                val responseBody = repository.updateInventory(id, requestBody)
                 Log.d("Update Response", responseBody.toString())
             } catch (e: Exception) {
                 Log.e("Update Error", e.message ?: "Unknown error")
@@ -77,13 +85,13 @@ constructor(
         }
     }
 
-    fun updateInventoryForRequieredRecipe(ingredients: Set<IngredientRecipe>) {
+    fun updateInventoryForRequieredRecipe(id :String ,ingredients: Set<IngredientRecipe>) {
         _errorMessage.value = null
         val requestBody = UpdateUserInventory(ingredients)
         viewModelScope.launch {
             try {
                 Log.d("Request Body",requestBody.toString())
-                val responseBody = repository.startCooking("6730c43b986803e32821be1f", requestBody)
+                val responseBody = repository.startCooking(id, requestBody)
                 Log.d("Update Response", responseBody.toString())
                 _errorMessage.value = null
             } catch (e: HttpException) { // Catch HTTP exceptions

@@ -7,6 +7,7 @@ import Trnity.ITP.Recetta.R
 import Trnity.ITP.Recetta.ViewModel.IngredientViewModel
 import Trnity.ITP.Recetta.ViewModel.InventoryViewModel
 import android.annotation.SuppressLint
+import android.content.Context
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -36,6 +37,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -79,6 +81,9 @@ fun AddIngredient(navController: NavController ,inventoryViewModel: InventoryVie
     val isSaveButtonVisible by remember {
         derivedStateOf { listIngredientQte.isNotEmpty() }
     }
+    val preferences = LocalContext.current.getSharedPreferences("checkbox", Context.MODE_PRIVATE)
+
+    val userId = preferences.getString("userId","").toString()
     fun doesMatchSearchQuery(ingredientName: String, query: String): Boolean {
         return ingredientName.contains(query, ignoreCase = true)
     }
@@ -106,7 +111,7 @@ fun AddIngredient(navController: NavController ,inventoryViewModel: InventoryVie
                     text = "Save",
                     modifier = Modifier.clickable {
                         Log.d("Ingredient QTE TEST", listIngredientQte.toString())
-                        inventoryViewModel.updateInventory(listIngredientQte)
+                        inventoryViewModel.updateInventory(userId,listIngredientQte)
                     },
                     color = MaterialTheme.colorScheme.primary
                 )

@@ -33,7 +33,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import Trnity.ITP.Recetta.R
+import android.content.Context
 import android.graphics.drawable.AnimatedVectorDrawable
+import android.util.Log
 import android.widget.ImageView
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.foundation.Image
@@ -69,48 +71,27 @@ data class CategorieHome(val image : Int, val text: String)
 @Composable
 fun HomeScreen( navController: NavController,viewModel: RecipeViewModel = hiltViewModel()) {
 
-
-
-
+    val preferences = LocalContext.current.getSharedPreferences("checkbox", Context.MODE_PRIVATE)
+    val user_id   = preferences.getString("userId","")
+    Log.d("User Id Debug " , user_id.toString())
     var categoryList = listOf<CategorieHome>(
         CategorieHome(R.drawable.pizza , "Fast Food" ),
         CategorieHome(R.drawable.stroberry , "Fruits" ),
         CategorieHome(R.drawable.drinks , "Drinks" )
     )
 
-    //val navController = rememberNavController()
     val recipes by viewModel.recipes.collectAsState()
     println("----------------------------------TestRecipes -----------------------------------------")
     println(recipes)
     LaunchedEffect(Unit) {
         viewModel.fetchAllRecipes()
     }
-    val drawerState = rememberDrawerState(DrawerValue.Closed)
-    val drawerViewModel: DrawerViewModel = DrawerViewModel()
-    val coroutineScope = rememberCoroutineScope()
-    var bottomBarHeight by remember { mutableStateOf(0f) }
-    val screenHeight = LocalConfiguration.current.screenHeightDp.dp
-
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        scrimColor = Color.Transparent,
-        drawerContent = {
-            val calculatedDrawerHeight = screenHeight.value - bottomBarHeight / 3
-            AppDrawer(
-                drawerState = drawerState,
-                items = drawerViewModel.drawerItems,
-                onItemClick = { item -> navigateTo(navController, item.destination) },
-                scope = coroutineScope,
-                drawerHeight = calculatedDrawerHeight
-            )
-        },
-        content = {
             Column(
                 modifier = Modifier
                     .padding(0.dp)
                     .fillMaxSize(),
                 verticalArrangement = Arrangement.Top,
-                horizontalAlignment = Alignment.CenterHorizontally // Center align all content in Column
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
                 Row(
@@ -118,23 +99,10 @@ fun HomeScreen( navController: NavController,viewModel: RecipeViewModel = hiltVi
                         .fillMaxWidth()
                         .padding(8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically // Ensures proper vertical alignment
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Top-left menu icon
-                    IconButton(
-                        onClick = {
-                            coroutineScope.launch {
-                                if (drawerState.isClosed) drawerState.open() else drawerState.close()
-                            }
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Menu,
-                            contentDescription = "Menu Icon"
-                        )
-                    }
+                   Text("Recetta" , color = Color.Black , fontWeight = FontWeight.Bold , fontSize = 20.sp)
 
-                    // Top-right SmokingSkillet icon
                     SmokingSkillet(navController)
                 }
 
@@ -160,18 +128,17 @@ fun HomeScreen( navController: NavController,viewModel: RecipeViewModel = hiltVi
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Centering LazyRow in Column
                 Box(
                     modifier = Modifier
                         .fillMaxWidth(),
-                    contentAlignment = Alignment.Center // Center content within Box
+                    contentAlignment = Alignment.Center
                 ) {
                     LazyRow(
 
 
                         modifier = Modifier
                             .wrapContentWidth()
-                            .padding(0.dp, 0.dp, 0.dp, 0.dp) // Ensure LazyRow doesn't take full width
+                            .padding(0.dp, 0.dp, 0.dp, 0.dp)
                     ) {
                         items(recipes) { recipe ->
 
@@ -183,8 +150,7 @@ fun HomeScreen( navController: NavController,viewModel: RecipeViewModel = hiltVi
                 }
             }
         }
-    )
-}
+
 @Composable
 
 fun HighlightLastTwoWords(text: String): AnnotatedString {

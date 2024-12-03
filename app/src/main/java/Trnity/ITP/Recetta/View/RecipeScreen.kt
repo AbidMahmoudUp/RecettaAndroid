@@ -18,6 +18,7 @@ import Trnity.ITP.Recetta.ui.theme.Pink
 import Trnity.ITP.Recetta.ui.theme.Shapes
 import Trnity.ITP.Recetta.ui.theme.Transparent
 import Trnity.ITP.Recetta.ui.theme.White
+import android.content.Context
 import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
@@ -87,6 +88,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -329,11 +331,14 @@ fun Reviews(recipe: Recipe) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShoppingListButton(recipe: Recipe , viewModel: InventoryViewModel,navController: NavController ) {
+
+    val preferences = LocalContext.current.getSharedPreferences("checkbox", Context.MODE_PRIVATE)
+    val userId = preferences.getString("userId","")
     val errorMessage by viewModel.errorMessage
 
     Button(
         onClick = {
-                  viewModel.updateInventoryForRequieredRecipe(recipe.ingredients.toSet())
+                  viewModel.updateInventoryForRequieredRecipe(userId!!,recipe.ingredients.toSet())
         },
         elevation = null,
         shape = Shapes.small,

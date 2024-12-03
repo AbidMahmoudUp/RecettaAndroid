@@ -30,7 +30,7 @@ class RecipeViewModel @Inject constructor(
     private val _recipes = MutableStateFlow<List<Recipe>>(emptyList())
     val recipes: StateFlow<List<Recipe>> = _recipes
     private val _generatedRecipes = MutableLiveData<List<Recipe>>()
-    val generatedRecipes: LiveData<List<Recipe>> get() = _generatedRecipes
+    val generatedRecipes: LiveData<List<Recipe>> = _generatedRecipes
     private val _recipe = MutableStateFlow(Recipe())
     val recipe: StateFlow<Recipe> = _recipe
     private val _isLoading = MutableLiveData(false)
@@ -81,12 +81,13 @@ class RecipeViewModel @Inject constructor(
             try {
 
                 val responseBody = repository.generateRecipe(requestBody)
-                 withContext(Dispatchers.Main) {
-                     _generatedRecipes.postValue(responseBody.toList())
-               //      Log.d("AI Request", "Request: $requestBody")
-                //     Log.d("AI Response", "Response: $responseBody")
-                     _isLoading.value = false
-                 }
+                withContext(Dispatchers.Main) {
+                    _generatedRecipes.value = responseBody.toList()
+                    Log.d("AI Request", "Request: $requestBody")
+                    Log.d("Generated Recipes Size", _generatedRecipes.value?.size.toString())
+                         Log.d("AI Response", "Response: $responseBody")
+                    _isLoading.value = false
+                }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     _generatedRecipes.postValue(emptyList())

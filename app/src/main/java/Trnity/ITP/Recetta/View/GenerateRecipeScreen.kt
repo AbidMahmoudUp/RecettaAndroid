@@ -1,17 +1,16 @@
 package Trnity.ITP.Recetta.View
 
 import Trnity.ITP.Recetta.Model.entities.IngredientRecipe
+import Trnity.ITP.Recetta.R
 import Trnity.ITP.Recetta.ViewModel.IngredientViewModel
 import Trnity.ITP.Recetta.ViewModel.RecipeViewModel
 import android.annotation.SuppressLint
+import android.net.Uri
 import android.util.Log
-import androidx.compose.animation.animateColor
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
+import androidx.compose.ui.util.lerp
+
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,19 +23,24 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -47,62 +51,111 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.google.gson.Gson
+import kotlinx.coroutines.delay
+import kotlin.math.absoluteValue
 
 @SuppressLint("UnrememberedMutableInteractionSource")
 @Composable
 fun GenerateRecipeScreen(navController: NavController,recipeViewModel : RecipeViewModel = hiltViewModel() ,ingredientViewModel: IngredientViewModel = hiltViewModel()) {
     val isLoading by recipeViewModel.isLoading.observeAsState(false)
     val generatedRecipes by recipeViewModel.generatedRecipes.observeAsState(emptyList())
-    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+  //  val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+  //  val ingredients by ingredientViewModel.ingredients.collectAsState()
+  //  val categories = listOf("All", "Fruit", "Vegetables", "Meat", "Nuts")
+  //  var selectedCategory by remember { mutableStateOf("All") }
+  //  var searchText by remember { mutableStateOf("") }
+    var listIngredientQte by remember { mutableStateOf(mutableSetOf<IngredientRecipe>()) }
+  //  val focusManager = LocalFocusManager.current
+    var progress by remember { mutableStateOf(0f) }
+    var showLoadingScreen by remember { mutableStateOf(false) }
+  //  val isSaveButtonVisible by remember {
+  //      derivedStateOf { listIngredientQte.isNotEmpty() }
+   // }
+
+    fun doesMatchSearchQuery(ingredientName: String, query: String): Boolean {
+        return ingredientName.contains(query, ignoreCase = true)
+    }
+
+
+    // if the loading is done let s navigate to the generation list root
+    LaunchedEffect(isLoading, showLoadingScreen) {
+        if (showLoadingScreen && !isLoading && generatedRecipes.isNotEmpty()) {
+            val recipesJson = Uri.encode(Gson().toJson(generatedRecipes))
+            navController.navigate("GeneratedList/$recipesJson") {
+                popUpTo(navController.graph.startDestinationId) {
+                    saveState = true
+                }
+                launchSingleTop = true
+                restoreState = true
+            }
+        }
+    }
+
+
+    Box(modifier = Modifier.fillMaxSize() ,contentAlignment = Alignment.Center )
+    {
+
+        if (showLoadingScreen) {
+            RecipeGenerationLoadingContent(
+                progress = progress,
+                onProgressComplete = { showLoadingScreen = false },
+                incrementProgress = {
+                    progress = (progress + 0.01f).coerceAtMost(1f)
+                }
+            )
+        } else {
+            GenerateRecipeContent(
+                navController = navController,
+                ingredientViewModel = ingredientViewModel,
+                listIngredientQte = listIngredientQte,
+                onIngredientsUpdated = { updatedList ->
+                    listIngredientQte = updatedList.toMutableSet()
+                },
+                onGenerateClick = {
+                    showLoadingScreen = true
+                    recipeViewModel.generateRecipes(listIngredientQte)
+                }
+            )
+        }
+    }
+}
+
+
+
+
+
+@Composable
+fun GenerateRecipeContent(
+    navController: NavController,
+    ingredientViewModel: IngredientViewModel,
+    listIngredientQte: Set<IngredientRecipe>,
+    onIngredientsUpdated: (Set<IngredientRecipe>) -> Unit,
+
+    onGenerateClick: () -> Unit
+) {
     val ingredients by ingredientViewModel.ingredients.collectAsState()
     val categories = listOf("All", "Fruit", "Vegetables", "Meat", "Nuts")
     var selectedCategory by remember { mutableStateOf("All") }
     var searchText by remember { mutableStateOf("") }
-    var listIngredientQte by remember { mutableStateOf(mutableSetOf<IngredientRecipe>()) }
-    val focusManager = LocalFocusManager.current
+   // var listIngredientQte by remember { mutableStateOf(mutableSetOf<IngredientRecipe>()) }
     val isSaveButtonVisible by remember {
-        derivedStateOf { listIngredientQte.isNotEmpty() }
-    }
-    fun doesMatchSearchQuery(ingredientName: String, query: String): Boolean {
-        return ingredientName.contains(query, ignoreCase = true)
-    }
-    Box(modifier = Modifier.fillMaxSize() ,contentAlignment = Alignment.Center )
-    {
-        if(isLoading)
-        {
+              derivedStateOf { listIngredientQte.isNotEmpty() }
+         }
 
-            navController.navigate("LoadingPage") {
-                popUpTo(navController.graph.startDestinationId) {
-                    saveState = true
-                }
-                //println("currentRoute is : "+item.route)
-                launchSingleTop = true
-                restoreState = true
-            }
-           // RecipeGenerationLoadingScreen(navController)
-        }
-        else if (generatedRecipes.isNotEmpty()){
-                Log.d("Recipes Response",generatedRecipes.toString())
-        }else{
-            Text("No recipes Generated")
-        }
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
-            .clickable(
-                interactionSource = MutableInteractionSource(),
-                indication = null
-            ) {
-                focusManager.clearFocus() // Clear focus when tapping outside
-            }
     ) {
         // Top Row: Back button and title
         Row(
@@ -110,29 +163,17 @@ fun GenerateRecipeScreen(navController: NavController,recipeViewModel : RecipeVi
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
-            navigationTitle(navController,"Generate Recipe")
+            navigationTitle(navController, "Generate Recipe")
 
-            if (isSaveButtonVisible) {
-                val infiniteTransition = rememberInfiniteTransition(label = "infinite transition")
-                val animatedColor by infiniteTransition.animateColor(
-                    initialValue = Color(0xFF4A91E7),
-                    targetValue = Color(0xFFB26B9C),
-                    animationSpec = infiniteRepeatable(tween(1000), RepeatMode.Reverse),
-                    label = "color"
-                )
-
-
-                Text(
-                    text = "Generate",
-                    modifier = Modifier.clickable {
-                        Log.d("Ingredient QTE TEST", listIngredientQte.toString())
-                        recipeViewModel.generateRecipes(listIngredientQte)
-                    },
-                    color = animatedColor ,
-                            fontWeight = FontWeight.Bold
-                )
-            }
-
+            Text(
+                text = "Generate",
+                modifier = Modifier.clickable {
+                    Log.d("Ingredient QTE TEST", listIngredientQte.toString())
+                    onGenerateClick() // Trigger the lambda on click
+                },
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold
+            )
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -144,9 +185,8 @@ fun GenerateRecipeScreen(navController: NavController,recipeViewModel : RecipeVi
             OutlinedTextField(
                 value = searchText,
                 onValueChange = { newText -> searchText = newText },
-
                 modifier = Modifier
-                    .width(screenWidth - 20.dp)
+                    .fillMaxWidth()
                     .padding(vertical = 8.dp),
                 shape = RoundedCornerShape(12.dp),
                 label = { Text("Search") },
@@ -158,17 +198,19 @@ fun GenerateRecipeScreen(navController: NavController,recipeViewModel : RecipeVi
                 }
             )
 
-            Text("Categories",modifier=Modifier.align(Alignment.Start),
-                style = MaterialTheme.typography.titleMedium )
-            LazyRow( modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp) )
-            {
-                items(categories.size)
-                {index->
+            Text(
+                "Categories",
+                modifier = Modifier.align(Alignment.Start),
+                style = MaterialTheme.typography.titleMedium
+            )
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(categories.size) { index ->
                     val category = categories[index]
-
                     CategoryTab(
                         text = category,
                         isSelected = category == selectedCategory,
@@ -176,20 +218,93 @@ fun GenerateRecipeScreen(navController: NavController,recipeViewModel : RecipeVi
                     )
                 }
             }
+
             val filteredIngredients = ingredients.filter { ingredient ->
-                doesMatchSearchQuery(ingredient.name, searchText)
+                ingredient.name.contains(searchText, ignoreCase = true)
             }
+
             CardGridExample(
                 ingredients = filteredIngredients,
-                listOfIngredients = listIngredientQte,
+                listOfIngredients = listIngredientQte.toMutableSet(),
                 onIngredientsUpdated = { updatedList ->
-                    listIngredientQte = updatedList.toMutableSet()
-                })
-
-
-
+                    onIngredientsUpdated(updatedList)
+                }
+            )
         }
-
     }
 }
+@Composable
+fun RecipeGenerationLoadingContent(
+    progress: Float,
+    onProgressComplete: () -> Unit,
+    incrementProgress: () -> Unit
+) {
+    val pagerState = rememberPagerState(pageCount = { 4 })
+
+    LaunchedEffect(Unit) {
+        while (progress < 1f) {
+            delay(100) // Increment progress every 100ms
+            incrementProgress()
+        }
+        onProgressComplete()
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Horizontal Pager for images
+        HorizontalPager(state = pagerState) { page ->
+            Card(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer {
+                        val pageOffset = (
+                                (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
+                                ).absoluteValue
+                        alpha = lerp(
+                            start = 0.5f,
+                            stop = 1f,
+                            fraction = 1f - pageOffset.coerceIn(0f, 1f)
+                        )
+                    }
+            ) {
+                Image(
+                    painter = painterResource(id = getImageResourceForPage(page)),
+                    contentDescription = "Image $page",
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+        }
+
+        // Progress Bar
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .align(Alignment.TopCenter),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Loading Recipes",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+            LinearProgressIndicator(
+                progress = progress,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(10.dp)
+                    .padding(top = 8.dp),
+                color = Color.Yellow
+            )
+        }
+    }
+}
+fun getImageResourceForPage(page: Int): Int {
+    return when (page) {
+        0 -> R.drawable.image1
+        1 -> R.drawable.image2
+        2 -> R.drawable.image3
+        3 -> R.drawable.image4
+        else -> R.drawable.image1 // Default case
+    }
 }

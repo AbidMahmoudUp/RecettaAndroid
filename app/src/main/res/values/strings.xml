@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">Recetta</string>
+    <string name="app_logo">App Logo</string>
+    <string name="the_tolet">The Tolet</string>
+    <string name="find_house">Find Your House</string>
+    <string name="recetta">Recetta</string>
+    <string name="login">Login</string>
+    <string name="signup">Sign Up</string>
+    <string name="writecode">Write your Code</string>
+    <string name="forgotpassword">Forget Password</string>
 </resources>

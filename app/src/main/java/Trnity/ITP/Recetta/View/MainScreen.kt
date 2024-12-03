@@ -1,7 +1,7 @@
 import Trnity.ITP.Recetta.View.Components.AppDrawer
 import Trnity.ITP.Recetta.View.Components.BottomNavigationBar
 import Trnity.ITP.Recetta.View.Components.DrawerContent
-import Trnity.ITP.Recetta.View.Components.MainNavigation
+import Trnity.ITP.Recetta.Routes.MainNavigation
 import Trnity.ITP.Recetta.ViewModel.DrawerViewModel
 import android.annotation.SuppressLint
 import android.os.Build
@@ -26,25 +26,10 @@ import kotlinx.coroutines.launch
 @Composable
 fun MainScreen() {
     val navController = rememberNavController()
-    val drawerState = rememberDrawerState(DrawerValue.Closed)
-    val drawerViewModel: DrawerViewModel = DrawerViewModel()
-    val coroutineScope = rememberCoroutineScope()
-    var bottomBarHeight by remember { mutableStateOf(0f) }
-    val screenHeight = LocalConfiguration.current.screenHeightDp.dp
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        scrimColor = Color.Transparent,
 
-        drawerContent = {
-            val calculatedDrawerHeight = screenHeight.value - bottomBarHeight/3
-            AppDrawer(
-                drawerState = drawerState,
-                items = drawerViewModel.drawerItems,
-                onItemClick = { item -> navigateTo(navController, item.destination) },
-                scope = coroutineScope ,
-                drawerHeight =calculatedDrawerHeight
-            ) }
-    ) {
+    var bottomBarHeight by remember { mutableStateOf(0f) }
+
+
         Scaffold(
 
             bottomBar = { BottomNavigationBar(navController){height -> bottomBarHeight =height} }
@@ -52,7 +37,7 @@ fun MainScreen() {
             MainNavigation(navController)
         }
     }
-}
+
 
 fun navigateTo(navController: NavController, destination: String) {
     navController.navigate(destination)

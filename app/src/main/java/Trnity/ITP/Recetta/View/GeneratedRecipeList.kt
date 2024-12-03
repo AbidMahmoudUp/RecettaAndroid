@@ -1,7 +1,10 @@
 
 
 
+import Trnity.ITP.Recetta.Model.entities.Recipe
 import Trnity.ITP.Recetta.R
+import Trnity.ITP.Recetta.ViewModel.RecipeViewModel
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -30,32 +33,39 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 
 
 @Composable
-fun GeneratedRecipeListScreen(navController: NavController)
+fun GeneratedRecipeListScreen(navController: NavController , recipes : List<Recipe>)
 {
+
+    Log.d("Recipes Gotten From the Ai" , recipes.toString())
     Surface {
         LazyVerticalGrid(columns = GridCells.Fixed(2), contentPadding = PaddingValues(4.dp), verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)){
-            items(6) {
+            items(recipes.size) {
                     item ->
                 ElevatedCard(modifier = Modifier.padding(8.dp), elevation = CardDefaults.cardElevation(8.dp)) {
                     Image(painter = painterResource(R.drawable.hamburger),
                         contentDescription = "",
-                        modifier = Modifier.padding(8.dp).clip(
-                            RoundedCornerShape(8.dp)
-                        ))
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .clip(
+                                RoundedCornerShape(8.dp)
+                            ))
                     Column(modifier = Modifier.padding(4.dp)) {
                         Text(
-                            text = "Hamburger",
+                            text = recipes[item].title,
                             modifier = Modifier.fillMaxWidth(),
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center
                         )
                         Row(
-                            modifier = Modifier.fillMaxWidth().padding(8.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             TextWithIcons(R.drawable.clock, "1h 15 min", 0xFF06402B)
@@ -65,7 +75,10 @@ fun GeneratedRecipeListScreen(navController: NavController)
                     Button(onClick = {},
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFC610F)),
-                        modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth().padding(start = 8.dp,bottom = 8.dp, end = 8.dp)) {
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .fillMaxWidth()
+                            .padding(start = 8.dp, bottom = 8.dp, end = 8.dp)) {
                         Text(text = "Details", fontWeight = FontWeight.Bold, color = Color(0xFFFFFFFF))
                     }
                 }
