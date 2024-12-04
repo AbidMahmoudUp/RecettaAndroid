@@ -1,12 +1,18 @@
 package Trnity.ITP.Recetta.View
 
 import Trnity.ITP.Recetta.Model.entities.IngredientRecipe
+import Trnity.ITP.Recetta.Model.entities.Recipe
 import Trnity.ITP.Recetta.R
 import Trnity.ITP.Recetta.ViewModel.IngredientViewModel
 import Trnity.ITP.Recetta.ViewModel.RecipeViewModel
 import android.annotation.SuppressLint
 import android.net.Uri
 import android.util.Log
+import androidx.compose.animation.animateColor
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.ui.util.lerp
 
@@ -69,18 +75,14 @@ import kotlin.math.absoluteValue
 fun GenerateRecipeScreen(navController: NavController,recipeViewModel : RecipeViewModel = hiltViewModel() ,ingredientViewModel: IngredientViewModel = hiltViewModel()) {
     val isLoading by recipeViewModel.isLoading.observeAsState(false)
     val generatedRecipes by recipeViewModel.generatedRecipes.observeAsState(emptyList())
-  //  val screenWidth = LocalConfiguration.current.screenWidthDp.dp
-  //  val ingredients by ingredientViewModel.ingredients.collectAsState()
-  //  val categories = listOf("All", "Fruit", "Vegetables", "Meat", "Nuts")
-  //  var selectedCategory by remember { mutableStateOf("All") }
-  //  var searchText by remember { mutableStateOf("") }
+
     var listIngredientQte by remember { mutableStateOf(mutableSetOf<IngredientRecipe>()) }
   //  val focusManager = LocalFocusManager.current
     var progress by remember { mutableStateOf(0f) }
     var showLoadingScreen by remember { mutableStateOf(false) }
-  //  val isSaveButtonVisible by remember {
-  //      derivedStateOf { listIngredientQte.isNotEmpty() }
-   // }
+    val isSaveButtonVisible by remember {
+        derivedStateOf { listIngredientQte.isNotEmpty() }
+    }
 
     fun doesMatchSearchQuery(ingredientName: String, query: String): Boolean {
         return ingredientName.contains(query, ignoreCase = true)
@@ -89,14 +91,29 @@ fun GenerateRecipeScreen(navController: NavController,recipeViewModel : RecipeVi
 
     // if the loading is done let s navigate to the generation list root
     LaunchedEffect(isLoading, showLoadingScreen) {
-        if (showLoadingScreen && !isLoading && generatedRecipes.isNotEmpty()) {
-            val recipesJson = Uri.encode(Gson().toJson(generatedRecipes))
+        if (showLoadingScreen && !isLoading ) {
+            val list = generatedRecipes.toList()
+            Log.d("List :", list.toString())
+            Log.d("Generated List :", generatedRecipes.toString())
+            var recipesJson : String
+            if(list.isNotEmpty())
+            {
+                recipesJson = Uri.encode(Gson().toJson(list))
+            }
+            else
+            {
+                recipesJson = Uri.encode(Gson().toJson(list))
+            }
+            Log.d("JSON RECIPE", recipesJson)
+            recipeViewModel.resetRecipes()
+            Log.d("List after :", list.toString())
+            Log.d("Generated List after :", generatedRecipes.toString())
             navController.navigate("GeneratedList/$recipesJson") {
                 popUpTo(navController.graph.startDestinationId) {
-                    saveState = true
+                    saveState = false
                 }
                 launchSingleTop = true
-                restoreState = true
+                restoreState = false
             }
         }
     }
@@ -124,7 +141,8 @@ fun GenerateRecipeScreen(navController: NavController,recipeViewModel : RecipeVi
                 onGenerateClick = {
                     showLoadingScreen = true
                     recipeViewModel.generateRecipes(listIngredientQte)
-                }
+                },
+                saveButton = isSaveButtonVisible
             )
         }
     }
@@ -138,19 +156,17 @@ fun GenerateRecipeScreen(navController: NavController,recipeViewModel : RecipeVi
 fun GenerateRecipeContent(
     navController: NavController,
     ingredientViewModel: IngredientViewModel,
-    listIngredientQte: Set<IngredientRecipe>,
+    listIngredientQte: MutableSet<IngredientRecipe>,
     onIngredientsUpdated: (Set<IngredientRecipe>) -> Unit,
-
-    onGenerateClick: () -> Unit
+    onGenerateClick: () -> Unit,
+    saveButton : Boolean
 ) {
     val ingredients by ingredientViewModel.ingredients.collectAsState()
     val categories = listOf("All", "Fruit", "Vegetables", "Meat", "Nuts")
     var selectedCategory by remember { mutableStateOf("All") }
     var searchText by remember { mutableStateOf("") }
    // var listIngredientQte by remember { mutableStateOf(mutableSetOf<IngredientRecipe>()) }
-    val isSaveButtonVisible by remember {
-              derivedStateOf { listIngredientQte.isNotEmpty() }
-         }
+
 
     Column(
         modifier = Modifier
@@ -164,18 +180,26 @@ fun GenerateRecipeContent(
             modifier = Modifier.fillMaxWidth()
         ) {
             navigationTitle(navController, "Generate Recipe")
+            if (saveButton) {
+                val infiniteTransition = rememberInfiniteTransition(label = "infinite transition")
 
-            Text(
-                text = "Generate",
-                modifier = Modifier.clickable {
-                    Log.d("Ingredient QTE TEST", listIngredientQte.toString())
-                    onGenerateClick() // Trigger the lambda on click
-                },
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Bold
-            )
+                val animatedColor by infiniteTransition.animateColor(
+                    initialValue = Color(0xFF60DDAD),
+                    targetValue = Color(0xFF4285F4),
+                    animationSpec = infiniteRepeatable(tween(1000), RepeatMode.Reverse),
+                    label = "color"
+                )
+                Text(
+                    text = "Generate",
+                    modifier = Modifier.clickable {
+                        Log.d("Ingredient QTE TEST", listIngredientQte.toString())
+                        onGenerateClick() // Trigger the lambda on click
+                    },
+                    color = animatedColor,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
-
         Spacer(modifier = Modifier.height(8.dp))
 
         Column(

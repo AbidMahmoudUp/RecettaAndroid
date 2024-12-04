@@ -30,7 +30,7 @@ class RecipeViewModel @Inject constructor(
     private val _recipes = MutableStateFlow<List<Recipe>>(emptyList())
     val recipes: StateFlow<List<Recipe>> = _recipes
     private val _generatedRecipes = MutableLiveData<List<Recipe>>()
-    val generatedRecipes: LiveData<List<Recipe>> = _generatedRecipes
+    var generatedRecipes: LiveData<List<Recipe>> = _generatedRecipes
     private val _recipe = MutableStateFlow(Recipe())
     val recipe: StateFlow<Recipe> = _recipe
     private val _isLoading = MutableLiveData(false)
@@ -66,6 +66,11 @@ class RecipeViewModel @Inject constructor(
         }
     }
 
+    fun resetRecipes()
+    {
+        _generatedRecipes.value = emptyList()
+        generatedRecipes = _generatedRecipes
+    }
     @SuppressLint("SuspiciousIndentation")
     fun generateRecipes(ingredients: Set<IngredientRecipe>) {
         _isLoading.postValue(true)

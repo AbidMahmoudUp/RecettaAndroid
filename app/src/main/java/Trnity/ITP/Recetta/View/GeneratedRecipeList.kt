@@ -42,6 +42,15 @@ fun GeneratedRecipeListScreen(navController: NavController , recipes : List<Reci
 {
 
     Log.d("Recipes Gotten From the Ai" , recipes.toString())
+    if(recipes.isEmpty())
+    {
+        Surface {
+            Column(horizontalAlignment = Alignment.CenterHorizontally , verticalArrangement = Arrangement.Center) {
+                Image(painter = painterResource(id = R.drawable.not_found_asset), contentDescription = "")
+            }
+        }
+    }
+    else{
     Surface {
         LazyVerticalGrid(columns = GridCells.Fixed(2), contentPadding = PaddingValues(4.dp), verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)){
@@ -84,6 +93,7 @@ fun GeneratedRecipeListScreen(navController: NavController , recipes : List<Reci
                 }
             }
         }
+    }
     }
 }
 
