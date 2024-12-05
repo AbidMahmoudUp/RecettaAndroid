@@ -95,6 +95,11 @@ dependencies {
     implementation("androidx.compose.animation:animation:1.7.5")
     implementation("com.google.accompanist:accompanist-drawablepainter:0.36.0")
 
+    implementation("io.coil-kt:coil-compose:2.1.0")
+    implementation("androidx.camera:camera-core:1.4.0")
+    implementation("androidx.camera:camera-camera2:1.4.0")
+    implementation("androidx.camera:camera-view:1.4.0")
+    implementation("com.google.accompanist:accompanist-permissions:0.36.0")
 
 
 }

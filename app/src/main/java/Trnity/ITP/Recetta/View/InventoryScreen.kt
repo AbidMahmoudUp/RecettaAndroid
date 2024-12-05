@@ -62,10 +62,17 @@ fun InventoryScreen(
             }
             Text(text = "Food Manager")
             Spacer(modifier = Modifier.width(120.dp))
-            Icon(
-                painter = painterResource(id = R.drawable.scaningrediant),
-                contentDescription = "Scan Ingredient"
-            )
+            IconButton(onClick = {
+                navController.navigate("scan")
+            })
+            {
+                Icon(
+                    painter = painterResource(id = R.drawable.scaningrediant),
+                    contentDescription = "Scan Ingredient"
+                )
+            }
+
+
         }
 
         // Ingredient count and Add button
