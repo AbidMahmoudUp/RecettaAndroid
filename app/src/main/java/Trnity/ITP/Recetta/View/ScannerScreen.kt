@@ -124,14 +124,15 @@ fun ScannerScreen(navController: NavController, scannerViewModel : ScannerViewMo
                     object : ImageCapture.OnImageSavedCallback {
                         @RequiresApi(Build.VERSION_CODES.O)
                         override fun onImageSaved(outputFile : ImageCapture.OutputFileResults) {
-                            // On successful capture, invoke callback with the Uri of the saved file
+                            val preferences = context.getSharedPreferences("checkbox", Context.MODE_PRIVATE)
+                            val user_id   = preferences.getString("userId","")
                             val file = File(photoFile.path)
                             Log.d("File", file.toString())
                             val requestBody = file.asRequestBody("application/octet-stream".toMediaTypeOrNull())
                             Log.d("File", requestBody.contentLength().toString())
                             Log.d("File", requestBody.toString())
                             val multipartBody = MultipartBody.Part.createFormData("file", file.name, requestBody)
-                            scannerViewModel.updateInventory("6728036e324c60058bd4ade8", multipartBody)
+                            scannerViewModel.updateInventory(user_id.toString(), multipartBody)
 
 
                         //Uri.fromFile(photoFile)

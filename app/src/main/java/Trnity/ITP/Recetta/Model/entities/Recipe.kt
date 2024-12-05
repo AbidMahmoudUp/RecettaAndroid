@@ -6,7 +6,7 @@ data class Recipe(
     @SerializedName("_id") val id: String ="",
     @SerializedName("title") val title: String ="",
     @SerializedName("description") val description: String ="",
-    @SerializedName("imageRecipe") val imageRecipe: String = "",
+    @SerializedName("image") val imageRecipe: String = "",
     @SerializedName("category") val category: String = "",
     @SerializedName("cookingTime") val cookingTime: String = "",
     @SerializedName("energy") val energy: String = "",

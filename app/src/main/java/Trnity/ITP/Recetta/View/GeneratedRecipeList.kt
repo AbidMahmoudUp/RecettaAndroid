@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 
 
 @Composable
@@ -57,7 +58,7 @@ fun GeneratedRecipeListScreen(navController: NavController , recipes : List<Reci
             items(recipes.size) {
                     item ->
                 ElevatedCard(modifier = Modifier.padding(8.dp), elevation = CardDefaults.cardElevation(8.dp)) {
-                    Image(painter = painterResource(R.drawable.hamburger),
+                    AsyncImage(model = "http://192.168.43.232:3000/uploads/"+recipes[item].imageRecipe ,
                         contentDescription = "",
                         modifier = Modifier
                             .padding(8.dp)

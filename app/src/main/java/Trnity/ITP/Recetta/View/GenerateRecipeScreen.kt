@@ -267,7 +267,7 @@ fun RecipeGenerationLoadingContent(
 
     LaunchedEffect(Unit) {
         while (progress < 1f) {
-            delay(100) // Increment progress every 100ms
+            delay(1000) // Increment progress every 100ms
             incrementProgress()
         }
         onProgressComplete()
