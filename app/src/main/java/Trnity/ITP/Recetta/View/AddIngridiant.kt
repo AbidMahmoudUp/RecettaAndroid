@@ -69,7 +69,7 @@ fun navigationTitle(navController : NavController , title : String ){
 }}
 @SuppressLint("UnrememberedMutableInteractionSource")
 @Composable
-fun AddIngredient(navController: NavController ,inventoryViewModel: InventoryViewModel = hiltViewModel() ,ingredientViewModel: IngredientViewModel = hiltViewModel()) {
+fun AddIngredient(navController: NavController, inventoryViewModel: InventoryViewModel = hiltViewModel(), ingredientViewModel: IngredientViewModel = hiltViewModel()) {
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
     val ingredients by ingredientViewModel.ingredients.collectAsState()
@@ -82,11 +82,19 @@ fun AddIngredient(navController: NavController ,inventoryViewModel: InventoryVie
         derivedStateOf { listIngredientQte.isNotEmpty() }
     }
     val preferences = LocalContext.current.getSharedPreferences("checkbox", Context.MODE_PRIVATE)
+    val userId = preferences.getString("userId", "").toString()
 
-    val userId = preferences.getString("userId","").toString()
     fun doesMatchSearchQuery(ingredientName: String, query: String): Boolean {
         return ingredientName.contains(query, ignoreCase = true)
     }
+
+    // update code here
+    val filteredIngredients = ingredients.filter { ingredient ->
+        // Filter based on category
+        (selectedCategory == "All" || ingredient.categorie == selectedCategory) &&
+                doesMatchSearchQuery(ingredient.name, searchText)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -104,19 +112,18 @@ fun AddIngredient(navController: NavController ,inventoryViewModel: InventoryVie
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
-            navigationTitle(navController,"Add Ingredient")
+            navigationTitle(navController, "Add Ingredient")
 
             if (isSaveButtonVisible) {
                 Text(
                     text = "Save",
                     modifier = Modifier.clickable {
                         Log.d("Ingredient QTE TEST", listIngredientQte.toString())
-                        inventoryViewModel.updateInventory(userId,listIngredientQte)
+                        inventoryViewModel.updateInventory(userId, listIngredientQte)
                     },
                     color = MaterialTheme.colorScheme.primary
                 )
             }
-
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -128,7 +135,6 @@ fun AddIngredient(navController: NavController ,inventoryViewModel: InventoryVie
             OutlinedTextField(
                 value = searchText,
                 onValueChange = { newText -> searchText = newText },
-
                 modifier = Modifier
                     .width(screenWidth - 20.dp)
                     .padding(vertical = 8.dp),
@@ -142,43 +148,43 @@ fun AddIngredient(navController: NavController ,inventoryViewModel: InventoryVie
                 }
             )
 
-            Text("Categories",modifier=Modifier.align(Alignment.Start),
-                style = MaterialTheme.typography.titleMedium )
-            LazyRow( modifier = Modifier
+            Text("Categories", modifier = Modifier.align(Alignment.Start),
+                style = MaterialTheme.typography.titleMedium)
+
+            LazyRow(modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp) )
-            {
-                    items(categories.size)
-                    {index->
-                        val category = categories[index]
+                horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(categories.size) { index ->
+                    val category = categories[index]
+                    CategoryTab(
+                        text = category,
+                        isSelected = category == selectedCategory,
+                        onClick = { selectedCategory = category } // update code here: category change
+                    )
+                }
+            }
 
-                        CategoryTab(
-                            text = category,
-                            isSelected = category == selectedCategory,
-                            onClick = { selectedCategory = category }
-                        )
-                    }
-            }
-            val filteredIngredients = ingredients.filter { ingredient ->
-                doesMatchSearchQuery(ingredient.name, searchText)
-            }
+            // update code here: Pass filtered ingredients after category and search filter
             CardGridExample(
                 ingredients = filteredIngredients,
                 listOfIngredients = listIngredientQte,
                 onIngredientsUpdated = { updatedList ->
                     listIngredientQte = updatedList.toMutableSet()
-                })
+                }
+            )
 
-            Button(modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(Color(0xFFFC610F))
-                   ,onClick = { /*TODO*/ }) {
-                    Text(text = "Add Ingredients")
+            Button(
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(Color(0xFFFC610F)),
+                onClick = { /*TODO*/ }
+            ) {
+                Text(text = "Add Ingredients")
             }
         }
-
     }
 }
+
 @SuppressLint("UnrememberedMutableInteractionSource")
 @Composable
 fun CategoryTab(text: String, isSelected: Boolean, onClick: () -> Unit) {
