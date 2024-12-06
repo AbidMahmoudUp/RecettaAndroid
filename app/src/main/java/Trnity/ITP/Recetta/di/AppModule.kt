@@ -1,5 +1,7 @@
 package Trnity.ITP.Recetta.di
 
+import Trnity.ITP.Recetta.Data.Local.RecipeDao
+import Trnity.ITP.Recetta.Data.Local.RecipeDatabase
 import Trnity.ITP.Recetta.Data.remote.api.ApiClient
 import Trnity.ITP.Recetta.Data.remote.api.IngredientApiService
 import Trnity.ITP.Recetta.Data.remote.api.InventoryApiService
@@ -13,6 +15,8 @@ import Trnity.ITP.Recetta.Model.repositories.IngredientRepository
 import Trnity.ITP.Recetta.Model.repositories.InventoryRepository
 import Trnity.ITP.Recetta.Model.repositories.RecipeRepository
 import Trnity.ITP.Recetta.Model.repositories.UserRepository
+import android.app.Application
+import android.content.Context
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -76,4 +80,22 @@ object AppModule {
     @Singleton
     fun provideInventoryApiService(): InventoryApiService =
         ApiClient.create(InventoryApiService::class.java)
+
+
+    @Provides
+    @Singleton
+    fun provideRecipeDatabase(context: Context): RecipeDatabase {
+        return RecipeDatabase.getDatabase(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideRecipeDao(recipeDatabase: RecipeDatabase): RecipeDao {
+        return recipeDatabase.recipeDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideContext(application: Application): Context = application.applicationContext
+
 }

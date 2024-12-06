@@ -108,30 +108,54 @@ import coil.compose.AsyncImage
 import kotlin.math.max
 import kotlin.math.min
 
-
 @Composable
-fun RecipeScreen(recipeId: String ,navController: NavController,inventoryViewModel: InventoryViewModel = hiltViewModel(),viewModel: RecipeViewModel = hiltViewModel()) {
+fun RecipeScreen(
+    recipe: Recipe,
+    navController: NavController,
+    inventoryViewModel: InventoryViewModel = hiltViewModel(),
+    viewModel: RecipeViewModel = hiltViewModel()
+) {
     inventoryViewModel.clearErrorMessage()
 
-// ----------------------------
-    LaunchedEffect(recipeId) {
-        viewModel.fetchRecipe(recipeId)
+    // Observe the favorite state
+    val isFavorite by viewModel.isFavorite.collectAsState()
+
+    // Load the recipe details and check if it's favorited
+    LaunchedEffect(recipe.id) {
+        viewModel.fetchRecipe(recipe.id)
+        viewModel.checkIfFavorite(recipe.id) // Check favorite status for this recipe
     }
 
     val scrollState = rememberLazyListState()
-    val recipe = viewModel.recipe.collectAsState().value
+    //val recipe = viewModel.recipe.collectAsState().value
 
-    println("--------------------------------------- TestRecipeScreen ------------------------------------------------------")
-    println(recipe)
-    Box(Modifier.padding(0.dp,0.dp,0.dp,80.dp)) {
-        Content(recipe, scrollState,inventoryViewModel,navController)
-        ParallaxToolbar(recipe, scrollState)
+    Box(Modifier.padding(0.dp, 0.dp, 0.dp, 80.dp)) {
+        Content(recipe, scrollState, inventoryViewModel, navController)
+
+        // Call ParallaxToolbar with the required parameters
+        ParallaxToolbar(
+            recipe = recipe,
+            scrollState = scrollState,
+            isFavorite = isFavorite,
+            onFavoriteClick = { isNowFavorite ->
+                if (isNowFavorite) {
+                    viewModel.toggleFavorite(recipe)
+                } else {
+                    viewModel.toggleFavorite(recipe)
+                }
+            }
+        )
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ParallaxToolbar(recipe: Recipe, scrollState: LazyListState) {
+fun ParallaxToolbar(
+    recipe: Recipe,
+    scrollState: LazyListState,
+    isFavorite: Boolean,
+    onFavoriteClick: (Boolean) -> Unit
+) {
     val directImageUrl = recipe.imageRecipe.replace("https://drive.google.com/file/d/", "https://drive.google.com/uc?export=download&id=")
         .replace("/view?usp=drive_link", "")
     val imageHeight = AppBarExpendedHeight - AppBarCollapsedHeight
@@ -178,7 +202,7 @@ fun ParallaxToolbar(recipe: Recipe, scrollState: LazyListState) {
                 verticalAlignment = Alignment.Bottom
             ) {
                 Text(
-                    text = recipe.category ?: "Category", // Default if category is null
+                    text = recipe.category.ifBlank { "Category" }, // Default if category is blank
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier
                         .clip(Shapes.small)
@@ -217,7 +241,7 @@ fun ParallaxToolbar(recipe: Recipe, scrollState: LazyListState) {
 
                 // Title centered in the middle
                 Text(
-                    text = recipe.title ?: "Recipe Title", // Default if title is null
+                    text = recipe.title.ifBlank { "Recipe Title" }, // Default if title is blank
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black,
@@ -228,18 +252,18 @@ fun ParallaxToolbar(recipe: Recipe, scrollState: LazyListState) {
                         .scale(1f - 0.15f * offsetProgress)
                 )
 
-                IconButton(onClick = { /* Action */ }) {
+                IconButton(onClick = { onFavoriteClick(!isFavorite) }) {
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_favorite),
+                        painter = painterResource(id = if (isFavorite) R.drawable.ic_favorite else R.drawable.ic_favorite),
                         contentDescription = null,
-                        tint = Gray
+                        tint = if (isFavorite) Color.Red else Gray
                     )
                 }
             }
         }
-
     }
 }
+
 
 
 @Composable

@@ -1,5 +1,7 @@
 package Trnity.ITP.Recetta.ViewModel
 
+import Trnity.ITP.Recetta.Data.Local.RecipeEntity
+import Trnity.ITP.Recetta.Data.Local.RecipeEntityRepository
 import Trnity.ITP.Recetta.Model.entities.Ingredient
 import Trnity.ITP.Recetta.Model.entities.IngredientRecipe
 import Trnity.ITP.Recetta.Model.entities.Recipe
@@ -24,7 +26,7 @@ import javax.inject.Inject
 @HiltViewModel
 class RecipeViewModel @Inject constructor(
     private val repository: RecipeRepository,
-    private val ingredientRepository: IngredientRepository
+    private val RDBRepository : RecipeEntityRepository
 ) : ViewModel() {
 
     private val _recipes = MutableStateFlow<List<Recipe>>(emptyList())
@@ -35,6 +37,10 @@ class RecipeViewModel @Inject constructor(
     val recipe: StateFlow<Recipe> = _recipe
     private val _isLoading = MutableLiveData(false)
     val isLoading: LiveData<Boolean> = _isLoading
+    private val _favoriteRecipes = MutableStateFlow<List<RecipeEntity>>(emptyList())
+    val favoriteRecipes: StateFlow<List<RecipeEntity>> = _favoriteRecipes
+    private val _isFavorite = MutableStateFlow(false)
+    val isFavorite: StateFlow<Boolean> = _isFavorite
     suspend fun fetchRecipe(id: String) {
         try {
             val recipe = repository.getRecipe(id)
@@ -103,4 +109,70 @@ class RecipeViewModel @Inject constructor(
         }
     }
 
+    fun toggleFavoriteWithConfirmation(recipe: RecipeEntity) {
+        val currentlyFavorite = _favoriteRecipes.value.contains(recipe)
+        if (currentlyFavorite) {
+            removeFavorite(recipe) // Remove if currently a favorite
+        } else {
+            addFavorite(recipe) // Add if not a favorite
+        }
+    }
+
+    fun addFavorite(recipe: RecipeEntity) {
+        viewModelScope.launch {
+            RDBRepository.addFavorite(recipe)
+            loadFavorites()
+
+        }
+    }
+
+    fun removeFavorite(recipe: RecipeEntity) {
+        viewModelScope.launch {
+            RDBRepository.removeFavorite(recipe)
+            loadFavorites()
+        }
+    }
+    fun loadFavorites() {
+        viewModelScope.launch {
+            val updatedFavorites = RDBRepository.getFavorites()
+            _favoriteRecipes.value = updatedFavorites
+        }
+    }
+
+    fun removeFavorite(recipe: Recipe) {
+        viewModelScope.launch {
+            RDBRepository.removeFavorite(recipe.toEntity())
+        }
+    }
+
+    fun toggleFavorite(recipe: Recipe) {
+        viewModelScope.launch {
+            val currentlyFavorite = RDBRepository.isFavorite(recipe.id)
+            if (currentlyFavorite) {
+                RDBRepository.removeFavorite(recipe.toEntity())
+                _isFavorite.value = false
+            } else {
+                RDBRepository.addFavorite(recipe.toEntity())
+                _isFavorite.value = true
+            }
+        }
+    }
+    fun checkIfFavorite(recipeId: String) {
+        viewModelScope.launch {
+            _isFavorite.value = RDBRepository.isFavorite(recipeId)
+        }
+    }
+
+}
+private fun Recipe.toEntity(): RecipeEntity {
+    return RecipeEntity(
+        id = this.id,
+        title = this.title,
+        description = this.description,
+        imageRecipe = this.imageRecipe,
+        category = this.category,
+        cookingTime = this.cookingTime,
+        energy = this.energy,
+        rating = this.rating
+    )
 }

@@ -23,6 +23,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.google.gson.Gson
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -65,18 +67,30 @@ fun MainNavigation(navController: NavHostController) {
         }
 
 
+//        composable(
+//            "recipeScreen/{recipeId}",
+//            arguments = listOf(navArgument("recipeId") { type = NavType.StringType })
+//        ) {backStackEntry ->
+//            val recipeId = backStackEntry.arguments?.getString("recipeId")
+//            Log.d("MainNavigation", "Navigating to RecipeScreen with recipeId: $recipeId")
+//
+//            if (recipeId != null) {
+//                RecipeScreen(recipeId = recipeId, navController = navController)
+//
+//            }
+//        }
         composable(
-            "recipeScreen/{recipeId}",
-            arguments = listOf(navArgument("recipeId") { type = NavType.StringType })
-        ) {backStackEntry ->
-            val recipeId = backStackEntry.arguments?.getString("recipeId")
-            Log.d("MainNavigation", "Navigating to RecipeScreen with recipeId: $recipeId")
-
-            if (recipeId != null) {
-                RecipeScreen(recipeId = recipeId, navController = navController)
-
+            "recipeScreen/{encodedRecipe}",
+            arguments = listOf(navArgument("encodedRecipe") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val encodedRecipe = backStackEntry.arguments?.getString("encodedRecipe")
+            if (encodedRecipe != null) {
+                val decodedRecipeJson = URLDecoder.decode(encodedRecipe, StandardCharsets.UTF_8.toString()) // Decode JSON
+                val recipe = Gson().fromJson(decodedRecipeJson, Recipe::class.java) // Deserialize JSON to Recipe
+                RecipeScreen(recipe = recipe, navController = navController)
             }
         }
+
 
         composable("scan") { ScannerScreen(navController) }
 

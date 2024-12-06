@@ -39,9 +39,20 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.ButtonDefaults
 
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 
 
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -110,32 +121,44 @@ fun ScannerScreen(navController: NavController, scannerViewModel : ScannerViewMo
         }
     }
     Box(
+
         modifier = Modifier
             .fillMaxSize()
+            .padding(bottom = 30.dp)
+            ,
     ) {
 
 
         CameraPreview(controller, Modifier.fillMaxSize())
 
+        Box(
 
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 75.dp),
+            contentAlignment = Alignment.BottomCenter
+        ) {
             Button(onClick = {
                 controller.takePicture(outputOptions,
                     executor,
                     object : ImageCapture.OnImageSavedCallback {
                         @RequiresApi(Build.VERSION_CODES.O)
-                        override fun onImageSaved(outputFile : ImageCapture.OutputFileResults) {
-                            val preferences = context.getSharedPreferences("checkbox", Context.MODE_PRIVATE)
-                            val user_id   = preferences.getString("userId","")
+                        override fun onImageSaved(outputFile: ImageCapture.OutputFileResults) {
+                            val preferences =
+                                context.getSharedPreferences("checkbox", Context.MODE_PRIVATE)
+                            val user_id = preferences.getString("userId", "")
                             val file = File(photoFile.path)
                             Log.d("File", file.toString())
-                            val requestBody = file.asRequestBody("application/octet-stream".toMediaTypeOrNull())
+                            val requestBody =
+                                file.asRequestBody("application/octet-stream".toMediaTypeOrNull())
                             Log.d("File", requestBody.contentLength().toString())
                             Log.d("File", requestBody.toString())
-                            val multipartBody = MultipartBody.Part.createFormData("file", file.name, requestBody)
+                            val multipartBody =
+                                MultipartBody.Part.createFormData("file", file.name, requestBody)
                             scannerViewModel.updateInventory(user_id.toString(), multipartBody)
 
 
-                        //Uri.fromFile(photoFile)
+                            //Uri.fromFile(photoFile)
 
 //                            val bitmap = imageProxy.toBitmap()
 //                            val byteArrayOutputStream = ByteArrayOutputStream();
@@ -162,11 +185,24 @@ fun ScannerScreen(navController: NavController, scannerViewModel : ScannerViewMo
                             onError(exception)
                         }
                     }
-                    )
-            }) {
-                Text("Capture Photo")
-            }
+                )
 
+            },modifier = Modifier
+                .size(60.dp) // updated code here: Sets the button size for a circular shape
+                .clip(CircleShape)
+                .background(Color.White), // updated code here: Sets the button's background color to white
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Transparent // updated code here: Ensures no default background color
+                ),
+                 ) {
+                 Box( // updated code here
+                        modifier = Modifier
+                            .size(15.dp) // updated code here: Defines the inner circle's size
+                            .clip(CircleShape) // updated code here: Clips the inner circle into a circular shape
+                            .background(Color.Gray.copy(alpha = 0.4f)) // updated code here: Sets a translucent gray background
+                        )
+            }
+        }
     }
 }
 

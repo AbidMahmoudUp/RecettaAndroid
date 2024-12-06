@@ -30,22 +30,32 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 
 import com.google.gson.Gson
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 @Composable
 fun RecipeCardWithImage(navController: NavController, recipe : Recipe) {
     println("RecipeCardWithImage: recipe = $recipe")
 
-    val directImageUrl = recipe.imageRecipe.replace("https://drive.google.com/file/d/", "https://drive.google.com/uc?export=download&id=")
-        .replace("/view?usp=drive_link", "")
-    fun navigateToDetails(recipeId: String) {
-      //  val jsonRecipe = Gson().toJson(recipe)
-        navController.navigate("recipeScreen/$recipeId"){
-            popUpTo(navController.graph.startDestinationId) { saveState = true }
-            //println("currentRoute is : "+item.route)
-            launchSingleTop = true
-            restoreState = true
-        }
+    val directImageUrl = "http://192.168.43.232:3000/uploads/"
+//    fun navigateToDetails(recipeId: String) {
+//      //  val jsonRecipe = Gson().toJson(recipe)
+//        navController.navigate("recipeScreen/$recipeId"){
+//            popUpTo(navController.graph.startDestinationId) { saveState = true }
+//            //println("currentRoute is : "+item.route)
+//            launchSingleTop = true
+//            restoreState = true
+//        }
+//    }
+fun navigateToDetails(recipe: Recipe) {
+    val jsonRecipe = Gson().toJson(recipe) // Serialize the Recipe object to JSON
+    val encodedRecipe = URLEncoder.encode(jsonRecipe, StandardCharsets.UTF_8.toString()) // Encode the JSON
+    navController.navigate("recipeScreen/$encodedRecipe") {
+        popUpTo(navController.graph.startDestinationId) { saveState = true }
+        launchSingleTop = true
+        restoreState = true
     }
+}
 
     // Outer container with shadow for the card
     Shadowed(
@@ -105,7 +115,7 @@ fun RecipeCardWithImage(navController: NavController, recipe : Recipe) {
                         onClick = {
 
 
-                            navigateToDetails(recipe.id)
+                            navigateToDetails(recipe)
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF46D42)),
                         modifier = Modifier.fillMaxWidth()

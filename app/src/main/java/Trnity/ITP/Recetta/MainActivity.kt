@@ -3,6 +3,7 @@
 package Trnity.ITP.Recetta
 
 import MainScreen
+import Trnity.ITP.Recetta.Data.Local.RecipeDatabase
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -23,6 +24,8 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val database = RecipeDatabase.getDatabase(this)
+
         setContent {
 
             RecettaTheme {

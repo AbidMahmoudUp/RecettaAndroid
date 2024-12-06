@@ -101,6 +101,11 @@ dependencies {
     implementation("androidx.camera:camera-view:1.4.0")
     implementation("com.google.accompanist:accompanist-permissions:0.36.0")
 
+    implementation ("androidx.room:room-runtime:2.5.0")
+    implementation ("androidx.room:room-ktx:2.5.1")
+    kapt ("androidx.room:room-compiler:2.5.0")
+
+
 
 }
 kapt{

@@ -36,11 +36,24 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.google.gson.Gson
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 
 @Composable
 fun GeneratedRecipeListScreen(navController: NavController , recipes : List<Recipe>)
 {
+
+    fun navigateToDetails(recipe: Recipe) {
+        val jsonRecipe = Gson().toJson(recipe) // Serialize the Recipe object to JSON
+        val encodedRecipe = URLEncoder.encode(jsonRecipe, StandardCharsets.UTF_8.toString()) // Encode the JSON
+        navController.navigate("recipeScreen/$encodedRecipe") {
+            popUpTo(navController.graph.startDestinationId) { saveState = true }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
 
     Log.d("Recipes Gotten From the Ai" , recipes.toString())
     if(recipes.isEmpty())
@@ -82,21 +95,28 @@ fun GeneratedRecipeListScreen(navController: NavController , recipes : List<Reci
                             TextWithIcons(R.drawable.kcal, "600 kcal", 0xFFF96115)
                         }
                     }
-                    Button(onClick = {},
+                    Button(
+                        onClick = {
+                           // val recipeJson = Gson().toJson(recipes[item]) // Serialize Recipe to JSON
+                            navigateToDetails(recipes[item]
+)                        },
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFC610F)),
                         modifier = Modifier
                             .align(Alignment.CenterHorizontally)
                             .fillMaxWidth()
-                            .padding(start = 8.dp, bottom = 8.dp, end = 8.dp)) {
+                            .padding(start = 8.dp, bottom = 8.dp, end = 8.dp)
+                    ) {
                         Text(text = "Details", fontWeight = FontWeight.Bold, color = Color(0xFFFFFFFF))
+                    }
+
                     }
                 }
             }
         }
     }
     }
-}
+
 
 
 @Composable
