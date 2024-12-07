@@ -73,7 +73,7 @@ fun AddIngredient(navController: NavController, inventoryViewModel: InventoryVie
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
     val ingredients by ingredientViewModel.ingredients.collectAsState()
-    val categories = listOf("All", "Fruit", "Vegetables", "Meat", "Nuts")
+    val categories = listOf("All", "Fruit", "Vegetables", "Meat", "Spices")
     var selectedCategory by remember { mutableStateOf("All") }
     var searchText by remember { mutableStateOf("") }
     var listIngredientQte by remember { mutableStateOf(mutableSetOf<IngredientRecipe>()) }
@@ -120,7 +120,11 @@ fun AddIngredient(navController: NavController, inventoryViewModel: InventoryVie
                     modifier = Modifier.clickable {
                         Log.d("Ingredient QTE TEST", listIngredientQte.toString())
                         inventoryViewModel.updateInventory(userId, listIngredientQte)
-                    },
+                        navController.navigate("inventory")    {
+                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+          launchSingleTop = true
+          restoreState = true
+                        }                },
                     color = MaterialTheme.colorScheme.primary
                 )
             }

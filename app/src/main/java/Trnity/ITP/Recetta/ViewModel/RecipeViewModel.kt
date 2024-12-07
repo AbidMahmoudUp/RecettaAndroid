@@ -169,7 +169,7 @@ private fun Recipe.toEntity(): RecipeEntity {
         id = this.id,
         title = this.title,
         description = this.description,
-        imageRecipe = this.imageRecipe,
+        imageRecipe = this.image,
         category = this.category,
         cookingTime = this.cookingTime,
         energy = this.energy,

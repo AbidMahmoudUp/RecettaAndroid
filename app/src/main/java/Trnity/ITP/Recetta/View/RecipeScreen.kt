@@ -156,8 +156,7 @@ fun ParallaxToolbar(
     isFavorite: Boolean,
     onFavoriteClick: (Boolean) -> Unit
 ) {
-    val directImageUrl = recipe.imageRecipe.replace("https://drive.google.com/file/d/", "https://drive.google.com/uc?export=download&id=")
-        .replace("/view?usp=drive_link", "")
+    val directImageUrl = "http://192.168.43.232:3000/uploads/"
     val imageHeight = AppBarExpendedHeight - AppBarCollapsedHeight
     val maxOffset = with(LocalDensity.current) { imageHeight.roundToPx() }
     val offset = min(scrollState.firstVisibleItemScrollOffset, maxOffset)
@@ -175,12 +174,13 @@ fun ParallaxToolbar(
                 .graphicsLayer { alpha = 1f - offsetProgress }
         ) {
             AsyncImage(
-                model = directImageUrl,
+                model = directImageUrl+recipe.image,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
-
+            println("aaaaaa here here here ")
+            println(directImageUrl+recipe.image)
             // Gradient overlay
             Box(
                 modifier = Modifier

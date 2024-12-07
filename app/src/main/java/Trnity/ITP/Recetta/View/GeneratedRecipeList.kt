@@ -71,7 +71,7 @@ fun GeneratedRecipeListScreen(navController: NavController , recipes : List<Reci
             items(recipes.size) {
                     item ->
                 ElevatedCard(modifier = Modifier.padding(8.dp), elevation = CardDefaults.cardElevation(8.dp)) {
-                    AsyncImage(model = "http://192.168.43.232:3000/uploads/"+recipes[item].imageRecipe ,
+                    AsyncImage(model = "http://192.168.43.232:3000/uploads/"+recipes[item].image ,
                         contentDescription = "",
                         modifier = Modifier
                             .padding(8.dp)

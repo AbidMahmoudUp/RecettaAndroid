@@ -162,7 +162,7 @@ fun navigateToDetails(recipe: Recipe) {
                         .background(Color.White, CircleShape)
                 ) {
                     AsyncImage(
-                       model = directImageUrl,
+                       model = directImageUrl+recipe.image,
                         contentDescription = "Recipe Image",
                         modifier = Modifier
                             .fillMaxSize()
