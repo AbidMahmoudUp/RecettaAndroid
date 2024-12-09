@@ -173,14 +173,23 @@ fun ParallaxToolbar(
                 .offset { IntOffset(x = 0, y = -offset) }
                 .graphicsLayer { alpha = 1f - offsetProgress }
         ) {
+            var image = ""
+            if(recipe.image.contains(" "))
+            {
+               image =  recipe.image.replace(" ","+")
+            }
+            else{
+                image = recipe.image
+            }
+
             AsyncImage(
-                model = directImageUrl+recipe.image,
+                model = "$directImageUrl$image",
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
             println("aaaaaa here here here ")
-            println(directImageUrl+recipe.image)
+            println("$directImageUrl$image")
             // Gradient overlay
             Box(
                 modifier = Modifier
@@ -293,10 +302,10 @@ fun Content(recipe: Recipe, scrollState: LazyListState,viewModel: InventoryViewM
         item {
             BasicInfo(recipe)
             Description(recipe)
-            ServingCalculator()
+           // ServingCalculator()
             IngredientsHeader(recipe)
             ShoppingListButton(recipe,viewModel,navController)
-            Reviews(recipe)
+            Reviews()
             Images()
         }
     }
@@ -304,7 +313,7 @@ fun Content(recipe: Recipe, scrollState: LazyListState,viewModel: InventoryViewM
 
 @Composable
 fun Images() {
-    Row(Modifier.padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+    Row(Modifier.padding(bottom = 16.dp).background(Color.Red), horizontalArrangement = Arrangement.SpaceBetween) {
         Image(
             painter = painterResource(id = R.drawable.strawberry_pie_2),
             contentDescription = null,
@@ -324,12 +333,14 @@ fun Images() {
 }
 
 @Composable
-fun Reviews(recipe: Recipe) {
+fun Reviews() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
+            .padding(horizontal = 8.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+
     ) {
         Column {
             Text(text = "Reviews", fontWeight = Bold)
@@ -339,7 +350,8 @@ fun Reviews(recipe: Recipe) {
             elevation = null,
             colors = ButtonDefaults.buttonColors(
                 containerColor = Transparent, contentColor = Pink
-            )
+            ),
+            modifier = Modifier.padding(0.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("See all")
@@ -367,11 +379,11 @@ fun ShoppingListButton(recipe: Recipe , viewModel: InventoryViewModel,navControl
         elevation = null,
         shape = Shapes.small,
         colors = ButtonDefaults.buttonColors(
-            containerColor = LightGray,
-            contentColor = Color.Black
+            containerColor = Color(0xFFF46D42),
+            contentColor = Color.White
         ), modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(horizontal = 16.dp , )
     ) {
         Text(text = "Start Cooking Now ", modifier = Modifier.padding(8.dp))
     }
@@ -449,8 +461,10 @@ fun ShoppingListButton(recipe: Recipe , viewModel: InventoryViewModel,navControl
                                 .align(Alignment.CenterEnd)
                                 .padding(8.dp)
                                 .offset(x = -10.dp, y = -160.dp)
-                                .clickable { viewModel.clearErrorMessage()
-                                                showDialog = false}
+                                .clickable {
+                                    viewModel.clearErrorMessage()
+                                    showDialog = false
+                                }
 
                         )
                     }
@@ -503,7 +517,7 @@ fun IngredientsHeader(recipe: Recipe) {
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .padding(horizontal = 16.dp, vertical = 16.dp)
-            .clip(Shapes.medium)
+            //.clip(RoundedCornerShape(8.dp))
             .background(LightGray)
             .fillMaxWidth()
             .height(44.dp)
@@ -536,7 +550,12 @@ fun IngredientsHeader(recipe: Recipe) {
 }
 @Composable
 fun StepsList(steps: List<String>) {
-    val textSteps = steps[0].split(".").map { it.trim() }.filter { it.isNotEmpty() }
+
+   if(steps.isEmpty())
+   {
+       noIngrediantSection()
+   }
+    else{val textSteps = steps[0].split(".").map { it.trim() }.filter { it.isNotEmpty() }
 
     Column(Modifier.padding(16.dp)) {
         textSteps.forEach { step ->
@@ -560,17 +579,18 @@ fun StepsList(steps: List<String>) {
             }
         }
     }
+    }
 }
 
 @Composable
 fun TabButton(text: String, active: Boolean, modifier: Modifier, onClick: () -> Unit) {
     Button(
         onClick = onClick,
-        shape = Shapes.medium,
+        shape = RoundedCornerShape(8.dp),
         modifier = modifier.fillMaxHeight(),
         elevation = null,
         colors = if (active) ButtonDefaults.buttonColors(
-            containerColor = Pink,
+            containerColor = Color(0xFFF46D42),
             contentColor = White
         ) else ButtonDefaults.buttonColors(
             containerColor = LightGray,
@@ -644,4 +664,27 @@ fun InfoColumn(@DrawableRes iconResouce: Int, text: String?) {
             fontWeight = FontWeight.Bold
         )
     }
+}
+@Composable
+fun noIngrediantSection() {
+    Column (
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.Start,
+        verticalArrangement = Arrangement.Center,
+
+
+    ){
+        Row(modifier = Modifier
+            .height(150.dp).padding(vertical = 8.dp)) {
+            Image(painter = painterResource(R.drawable.something_went_wrong), contentDescription = "someting went wrong", modifier = Modifier
+                .width(120.dp)
+                .height(120.dp))
+            Column(modifier = Modifier.fillMaxHeight(),verticalArrangement = Arrangement.Center) {
+                Text("Oops, Something went wrong !", fontWeight = FontWeight.Bold , fontSize = 18.sp, textAlign = TextAlign.Center)
+            }
+        }
+
+    }
+
+
 }

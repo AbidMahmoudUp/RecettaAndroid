@@ -18,5 +18,4 @@ interface RecipeApiService {
     @POST("generative-ia")
     suspend fun generateRecipes(@Body prompt: Map<String, String>) :Set<Recipe>
 
-
 }

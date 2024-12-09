@@ -49,7 +49,7 @@ fun RecipeCardWithImage(navController: NavController, recipe : Recipe) {
 //    }
 fun navigateToDetails(recipe: Recipe) {
     val jsonRecipe = Gson().toJson(recipe) // Serialize the Recipe object to JSON
-    val encodedRecipe = URLEncoder.encode(jsonRecipe, StandardCharsets.UTF_8.toString()) // Encode the JSON
+    val encodedRecipe = URLEncoder.encode(jsonRecipe, StandardCharsets.US_ASCII.toString()) // Encode the JSON
     navController.navigate("recipeScreen/$encodedRecipe") {
         popUpTo(navController.graph.startDestinationId) { saveState = true }
         launchSingleTop = true
@@ -78,8 +78,8 @@ fun navigateToDetails(recipe: Recipe) {
                     .fillMaxWidth()
                     .height(500.dp)
                     .align(Alignment.Center)
-                    .padding(top = 40.dp, start = 16.dp) // Offset card within the box
-                    .clip(RoundedCornerShape(16.dp)), // Rounded corners for the card
+                    .padding(top = 40.dp, start = 16.dp)
+                    .clip(RoundedCornerShape(16.dp)),
                 colors = CardDefaults.cardColors(containerColor = Color(0xFFFEC5AA))
             ) {
                 Column(
@@ -94,12 +94,13 @@ fun navigateToDetails(recipe: Recipe) {
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.Black,
+                        maxLines = 2
                     )
                     Text(
                         text = recipe.description,
                         fontSize = 14.sp,
                         color = Color.Gray,
-                        maxLines = 4,
+                        maxLines = 3,
                         modifier = Modifier.padding(vertical = 8.dp)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -125,7 +126,6 @@ fun navigateToDetails(recipe: Recipe) {
                 }
             }
 
-            // "Launch" text positioned on top-left of the card
             val infiniteTransition = rememberInfiniteTransition(label = "infinite transition")
             val animatedColor by infiniteTransition.animateColor(
                 initialValue = Color(0xFF60DDAD),
@@ -135,13 +135,13 @@ fun navigateToDetails(recipe: Recipe) {
             )
 
             Text(
-                text = "Launch",
+                text = recipe.category,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = animatedColor,
                 modifier = Modifier
                     .align(Alignment.TopStart)
-                    .offset(x = 36.dp, y = 90.dp) // Adjust offset as desired
+                    .offset(x = 30.dp, y = 90.dp) // Adjust offset as desired
             )
 
             // Image positioned in front of the card at the top-end with shadow

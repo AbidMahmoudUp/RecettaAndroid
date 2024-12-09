@@ -30,9 +30,7 @@ import coil.compose.AsyncImage
 
 @Composable
 fun RecipeIngredientCard ( recipeIngredient: IngredientRecipe){
-    val directImageUrl =
-        recipeIngredient.ingredient?.image?.replace("https://drive.google.com/file/d/", "https://drive.google.com/uc?export=download&id=")
-            ?.replace("/view?usp=drive_link", "")
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -48,7 +46,14 @@ fun RecipeIngredientCard ( recipeIngredient: IngredientRecipe){
                 .background(Color.Transparent),
             colors = CardDefaults.cardColors(Color.Transparent)
         ) {
-            AsyncImage("http://192.168.43.232:3000/uploads/"+ recipeIngredient.ingredient?.image , contentDescription = "Test" ,
+            var imageFile = recipeIngredient.ingredient?.image?: ""
+            var image=""
+            if(imageFile.contains(" "))
+            {
+
+                image = imageFile.replace(" " , "+")
+            }
+            AsyncImage("http://192.168.43.232:3000/uploads/"+ image , contentDescription = "Test" ,
                 Modifier
                     .padding(0.dp)
                     .size(70.dp))

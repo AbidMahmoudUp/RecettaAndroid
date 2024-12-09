@@ -158,26 +158,6 @@ fun ScannerScreen(navController: NavController, scannerViewModel : ScannerViewMo
                             scannerViewModel.updateInventory(user_id.toString(), multipartBody)
 
 
-                            //Uri.fromFile(photoFile)
-
-//                            val bitmap = imageProxy.toBitmap()
-//                            val byteArrayOutputStream = ByteArrayOutputStream();
-//                            bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
-//                            var byteArray = byteArrayOutputStream .toByteArray();
-//                            var encoded = Base64.getEncoder().encodeToString(byteArray)
-//                            var encodedList = mutableListOf<String>()
-////                            while(encoded.length > 511)
-////                            {
-////                                encodedList.add(encoded.substring(IntRange(0, 511)))
-////                                encoded = encoded.removeRange(IntRange(0, 511))
-////                                Log.d("Encoded Image", encoded)
-////                            }
-////                            if(encoded.isNotEmpty()) {
-////                                encodedList.add(encoded)
-////                            }
-//                            Log.d("Encoded Image", encodedList.toString())
-                            //val scannerUserInventory : ScannerUserInventory = ScannerUserInventory(encodedList)
-                            //scannerViewModel.updateInventory("6728036e324c60058bd4ade8", scannerUserInventory)
                         }
 
                         override fun onError(exception: ImageCaptureException) {

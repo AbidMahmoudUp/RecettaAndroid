@@ -88,7 +88,7 @@ fun HomeScreen( navController: NavController,viewModel: RecipeViewModel = hiltVi
     }
             Column(
                 modifier = Modifier
-                    .padding(0.dp)
+                    .padding( horizontal = 16.dp)
                     .fillMaxSize(),
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally

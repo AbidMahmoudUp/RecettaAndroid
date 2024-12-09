@@ -115,16 +115,16 @@ fun AddIngredient(navController: NavController, inventoryViewModel: InventoryVie
             navigationTitle(navController, "Add Ingredient")
 
             if (isSaveButtonVisible) {
+                Log.d("zaeaz","ezaezaezaazezaeeazzezae")
                 Text(
                     text = "Save",
                     modifier = Modifier.clickable {
                         Log.d("Ingredient QTE TEST", listIngredientQte.toString())
                         inventoryViewModel.updateInventory(userId, listIngredientQte)
-                        navController.navigate("inventory")    {
-                            popUpTo(navController.graph.startDestinationId) { saveState = true }
-          launchSingleTop = true
-          restoreState = true
-                        }                },
+                        navController.navigate("inventory") {
+                            popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                            launchSingleTop = true
+                        }          },
                     color = MaterialTheme.colorScheme.primary
                 )
             }

@@ -100,6 +100,12 @@ fun CardsList(favorites: List<RecipeEntity>, recipeViewModel: RecipeViewModel) {
         }
 
         // Category buttons (you can keep this logic as it is)
+
+        if(favorites.isEmpty())
+        {
+            noIngrediantSection(image = R.drawable.dish , title = "\"Oops, No Favorites Found!\"" , description="Your favorites list is empty for now.\n Head over to the recipes section,\n find dishes you love, and add them to your \n favorites to access them anytime!\"" )
+        }
+        else{
         LazyRow(modifier = Modifier
             .wrapContentSize()
             .padding(8.dp)) {
@@ -122,6 +128,7 @@ fun CardsList(favorites: List<RecipeEntity>, recipeViewModel: RecipeViewModel) {
             items(favorites.size) { index ->
                 CardItemFavorite(favorites[index], recipeViewModel) // Pass recipeViewModel here
             }
+        }
         }
     }
 }
