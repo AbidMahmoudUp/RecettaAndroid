@@ -33,6 +33,7 @@ import android.content.ContextWrapper
 import android.net.Uri
 import android.os.Build
 import android.util.Log
+import android.widget.Toast
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -48,7 +49,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ButtonDefaults
 
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -60,6 +64,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
+import com.google.gson.Gson
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -76,116 +81,140 @@ fun Context.getActivityOrNull(): Activity? {
 
     return null
 }
-
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun ScannerScreen(navController: NavController, scannerViewModel : ScannerViewModel = hiltViewModel())
-{
+fun ScannerScreen(
+    navController: NavController,
+    scannerViewModel: ScannerViewModel = hiltViewModel()
+) {
+    val updateSuccess by scannerViewModel.updateSuccess.observeAsState(false)
+    val progressTrigger by scannerViewModel.progressTrigger.observeAsState(false)
 
-
-
-    val executor = remember { Executors.newSingleThreadExecutor() }
-    val photoFile = createPhotoFile(LocalContext.current)
-    val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
-
-    val capturedImageUri = remember { mutableStateOf<Uri?>(null) }
+    var progress by remember { mutableStateOf(0f) }
+    var showLoadingScreen by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
-
-    val cameraPermissionState = rememberPermissionState(Manifest.permission.CAMERA)
-
-    val requestPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
-            // Permission granted
-        } else {
-            // Handle permission denial
-        }
-    }
-
-    LaunchedEffect(cameraPermissionState) {
-        if (!cameraPermissionState.status.isGranted && cameraPermissionState.status.shouldShowRationale) {
-            // Show rationale if needed
-        } else {
-            requestPermissionLauncher.launch(Manifest.permission.CAMERA)
-        }
-    }
-
+    val executor = remember { Executors.newSingleThreadExecutor() }
+    val photoFile = createPhotoFile(context)
+    val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 
     val controller = remember {
-        LifecycleCameraController(
-            context
-        ).apply {
+        LifecycleCameraController(context).apply {
             setEnabledUseCases(CameraController.IMAGE_CAPTURE)
         }
     }
-    Box(
 
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(bottom = 30.dp)
-            ,
-    ) {
-
-
-        CameraPreview(controller, Modifier.fillMaxSize())
-
-        Box(
-
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = 75.dp),
-            contentAlignment = Alignment.BottomCenter
-        ) {
-            Button(onClick = {
-                controller.takePicture(outputOptions,
-                    executor,
-                    object : ImageCapture.OnImageSavedCallback {
-                        @RequiresApi(Build.VERSION_CODES.O)
-                        override fun onImageSaved(outputFile: ImageCapture.OutputFileResults) {
-                            val preferences =
-                                context.getSharedPreferences("checkbox", Context.MODE_PRIVATE)
-                            val user_id = preferences.getString("userId", "")
-                            val file = File(photoFile.path)
-                            Log.d("File", file.toString())
-                            val requestBody =
-                                file.asRequestBody("application/octet-stream".toMediaTypeOrNull())
-                            Log.d("File", requestBody.contentLength().toString())
-                            Log.d("File", requestBody.toString())
-                            val multipartBody =
-                                MultipartBody.Part.createFormData("file", file.name, requestBody)
-                            scannerViewModel.updateInventory(user_id.toString(), multipartBody)
-
-
-                        }
-
-                        override fun onError(exception: ImageCaptureException) {
-                            // On error, invoke the error callback with the encountered exception
-                            onError(exception)
-                        }
-                    }
-                )
-
-            },modifier = Modifier
-                .size(60.dp) // updated code here: Sets the button size for a circular shape
-                .clip(CircleShape)
-                .background(Color.White), // updated code here: Sets the button's background color to white
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Transparent // updated code here: Ensures no default background color
-                ),
-                 ) {
-                 Box( // updated code here
-                        modifier = Modifier
-                            .size(15.dp) // updated code here: Defines the inner circle's size
-                            .clip(CircleShape) // updated code here: Clips the inner circle into a circular shape
-                            .background(Color.Gray.copy(alpha = 0.4f)) // updated code here: Sets a translucent gray background
-                        )
+    // Observe updateSuccess to navigate upon successful update
+    LaunchedEffect(updateSuccess) {
+        if (updateSuccess) {
+            navController.navigate("inventory") {
+                popUpTo(navController.graph.startDestinationId) { saveState = false }
+                launchSingleTop = true
+                restoreState = false
             }
         }
     }
-}
 
+    // Handle progress animation
+    LaunchedEffect(progressTrigger) {
+        if (progressTrigger) {
+            showLoadingScreen = true
+            while (progress < 1f) {
+                progress += 0.01f
+                kotlinx.coroutines.delay(5000L)
+            }
+            progress = 0f
+            showLoadingScreen = false
+            scannerViewModel.resetProgressTrigger()
+        }
+    }
+    if (showLoadingScreen) {
+        RecipeGenerationLoadingContent(
+            progress = progress,
+            onProgressComplete = { showLoadingScreen = false },
+            incrementProgress = {
+                progress = (progress + 0.01f).coerceAtMost(1f)
+            }
+        )
+    } else {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 30.dp)
+        ) {
+
+
+            CameraPreview(controller, Modifier.fillMaxSize())
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = 75.dp),
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                Button(
+                    onClick = {
+                        controller.takePicture(
+                            outputOptions,
+                            executor,
+                            object : ImageCapture.OnImageSavedCallback {
+                                @RequiresApi(Build.VERSION_CODES.O)
+                                override fun onImageSaved(outputFile: ImageCapture.OutputFileResults) {
+                                    val preferences =
+                                        context.getSharedPreferences(
+                                            "checkbox",
+                                            Context.MODE_PRIVATE
+                                        )
+                                    val user_id = preferences.getString("userId", "") ?: ""
+                                    val file = File(photoFile.path)
+
+                                    if (file.exists()) {
+                                        val requestBody =
+                                            file.asRequestBody("application/octet-stream".toMediaTypeOrNull())
+                                        val multipartBody =
+                                            MultipartBody.Part.createFormData(
+                                                "file",
+                                                file.name,
+                                                requestBody
+                                            )
+
+                                        scannerViewModel.updateInventory(user_id, multipartBody)
+                                    }
+                                }
+
+                                override fun onError(exception: ImageCaptureException) {
+                                    Log.e(
+                                        "Camera",
+                                        "Error capturing image: ${exception.message}",
+                                        exception
+                                    )
+                                    Toast.makeText(
+                                        context,
+                                        "Failed to capture image. Please try again.",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                            }
+                        )
+                    },
+                    modifier = Modifier
+                        .size(60.dp)
+                        .clip(CircleShape)
+                        .background(Color.White),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(15.dp)
+                            .clip(CircleShape)
+                            .background(Color.Gray.copy(alpha = 0.4f))
+                    )
+                }
+            }
+        }
+    }
+
+}
 
 private fun createPhotoFile(context: Context): File {
     // Obtain the directory for saving the photo

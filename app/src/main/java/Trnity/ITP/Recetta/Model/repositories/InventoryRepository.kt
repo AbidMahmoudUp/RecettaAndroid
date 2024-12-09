@@ -10,6 +10,6 @@ interface InventoryRepository {
     suspend fun updateInventory( id: String,request :  UpdateUserInventory ): Inventory
     suspend fun getInventory(id:String): Inventory
     suspend fun startCooking(id:String, request: UpdateUserInventory) :Inventory
-    suspend fun updateInventoryWithImage(id: String, img: MultipartBody.Part)
+    suspend fun updateInventoryWithImage(id: String, img: MultipartBody.Part):Boolean
 
 }

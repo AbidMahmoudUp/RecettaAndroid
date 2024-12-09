@@ -302,8 +302,9 @@ fun RecipeGenerationLoadingContent(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
-                .align(Alignment.TopCenter),
+                .padding(bottom = 50.dp)
+                .align(Alignment.BottomCenter)
+            .offset(y = (-56).dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(

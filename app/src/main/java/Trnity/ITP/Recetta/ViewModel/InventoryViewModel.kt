@@ -11,6 +11,8 @@ import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -37,27 +39,11 @@ constructor(
     val isLoading = _isLoading.asStateFlow()
     private val _errorMessage  = mutableStateOf<String?>(null)
     val errorMessage : State<String?> get() = _errorMessage
-  //  val   sharedPreferences = ApplicationContext..getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-   // val preferences = context.getSharedPreferences("checkbox", Context.MODE_PRIVATE)
-   // val userId = preferences.getString("userId","")
-    // Automatically fetch ingredients when ViewModel is created
-    init {
-        println("TEST-----------------------------------------------------------------------")
-        //println(fetchInventory())
-    }
-    fun loadStuff()
-    {
-        viewModelScope.launch {
-            _isLoading.value = true
-            delay(3000)
-            _isLoading.value = false
-        }
 
-    }
+
     fun fetchInventory(id : String) {
         viewModelScope.launch {
             try {
-                // Fetch ingredients from the repository
                 _isLoading.value = true
                 delay(1000)
                 _inventory.value = repository.getInventory(id)

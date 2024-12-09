@@ -3,6 +3,7 @@ package Trnity.ITP.Recetta.Data.remote.api
 import Trnity.ITP.Recetta.Data.remote.Requests.UpdateUserInventory
 import Trnity.ITP.Recetta.Model.entities.Inventory
 import okhttp3.MultipartBody
+import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.PATCH
@@ -24,5 +25,5 @@ interface InventoryApiService {
 
     @Multipart
     @POST("inventory/updateInventoryWithImage/{id}")
-    suspend fun updateInventoryWithImage(@Path("id") id: String, @Part request: MultipartBody.Part)
+    suspend fun updateInventoryWithImage(@Path("id") id: String, @Part request: MultipartBody.Part) : Response<Inventory>
 }

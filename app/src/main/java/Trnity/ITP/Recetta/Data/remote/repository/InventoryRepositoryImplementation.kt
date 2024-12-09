@@ -19,8 +19,14 @@ class InventoryRepositoryImplementation(private  val inventoryApiService : Inven
         return inventoryApiService.startCooking(id,request)
     }
 
-    override suspend fun updateInventoryWithImage(id: String, img: MultipartBody.Part) {
-        return inventoryApiService.updateInventoryWithImage(id, img)
+    override suspend fun updateInventoryWithImage(id: String, img: MultipartBody.Part) : Boolean  {
+        return try {
+            val response = inventoryApiService.updateInventoryWithImage(id, img)
+            response.isSuccessful // Return true if the request was successful, otherwise false
+        } catch (e: Exception) {
+            // Log the error if needed
+            false // Return false if there's an error
+        }
     }
 
 
