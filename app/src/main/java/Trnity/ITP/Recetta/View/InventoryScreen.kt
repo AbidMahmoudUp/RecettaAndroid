@@ -118,13 +118,7 @@ fun InventoryScreen(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            IconButton(onClick = { navController.popBackStack() }) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Back",
-                    tint = Color(0xFF039be5)
-                )
-            }
+
             Text(text = if (isSelectionMode) "Select Items" else "Food Manager")
             Spacer(modifier = Modifier.width(120.dp))
 

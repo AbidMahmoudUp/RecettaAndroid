@@ -138,6 +138,7 @@ fun AddIngredient(navController: NavController, inventoryViewModel: InventoryVie
         ) {
             OutlinedTextField(
                 value = searchText,
+                maxLines = 1,
                 onValueChange = { newText -> searchText = newText },
                 modifier = Modifier
                     .width(screenWidth - 20.dp)

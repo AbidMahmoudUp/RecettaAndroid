@@ -38,15 +38,7 @@ fun RecipeCardWithImage(navController: NavController, recipe : Recipe) {
     println("RecipeCardWithImage: recipe = $recipe")
 
     val directImageUrl = "http://192.168.43.232:3000/uploads/"
-//    fun navigateToDetails(recipeId: String) {
-//      //  val jsonRecipe = Gson().toJson(recipe)
-//        navController.navigate("recipeScreen/$recipeId"){
-//            popUpTo(navController.graph.startDestinationId) { saveState = true }
-//            //println("currentRoute is : "+item.route)
-//            launchSingleTop = true
-//            restoreState = true
-//        }
-//    }
+
 fun navigateToDetails(recipe: Recipe) {
     val jsonRecipe = Gson().toJson(recipe) // Serialize the Recipe object to JSON
     val encodedRecipe = URLEncoder.encode(jsonRecipe, StandardCharsets.US_ASCII.toString()) // Encode the JSON

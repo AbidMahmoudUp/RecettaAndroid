@@ -179,7 +179,7 @@ fun GenerateRecipeContent(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
-            navigationTitle(navController, "Generate Recipe")
+            Text("Generate Recipe")
             if (saveButton) {
                 val infiniteTransition = rememberInfiniteTransition(label = "infinite transition")
 

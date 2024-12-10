@@ -33,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import Trnity.ITP.Recetta.R
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.drawable.AnimatedVectorDrawable
 import android.util.Log
@@ -40,7 +41,11 @@ import android.widget.ImageView
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextFieldDefaults
 
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,6 +53,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 
 import androidx.compose.ui.text.AnnotatedString
@@ -68,36 +74,50 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 data class CategorieHome(val image : Int, val text: String)
+@SuppressLint("UnrememberedMutableInteractionSource")
 @Composable
 fun HomeScreen( navController: NavController,viewModel: RecipeViewModel = hiltViewModel()) {
+
+    val focusManager = LocalFocusManager.current
+    var selectedCategory by remember { mutableStateOf<CategorieHome?>(null) } // State for selected category
 
     val preferences = LocalContext.current.getSharedPreferences("checkbox", Context.MODE_PRIVATE)
     val user_id   = preferences.getString("userId","")
     Log.d("User Id Debug " , user_id.toString())
     var categoryList = listOf<CategorieHome>(
         CategorieHome(R.drawable.pizza , "Fast Food" ),
-        CategorieHome(R.drawable.stroberry , "Fruits" ),
+        CategorieHome(R.drawable.main_course , "Main Course" ),
         CategorieHome(R.drawable.drinks , "Drinks" )
     )
+    var searchText by remember { mutableStateOf("") }
 
     val recipes by viewModel.recipes.collectAsState()
     println("----------------------------------TestRecipes -----------------------------------------")
     println(recipes)
+    val filteredRecipes = recipes.filter {
+        it.title.startsWith(searchText, ignoreCase = true)  &&(selectedCategory == null || it.category == selectedCategory?.text)
+    }
     LaunchedEffect(Unit) {
         viewModel.fetchAllRecipes()
     }
             Column(
                 modifier = Modifier
-                    .padding( horizontal = 16.dp)
-                    .fillMaxSize(),
+                    .padding(horizontal = 16.dp)
+                    .fillMaxSize()
+                    .background(Color.Transparent)
+                    .clickable(
+                        interactionSource = MutableInteractionSource(),
+                        indication = null
+                    ) {
+                        focusManager.clearFocus() // Clear focus when tapping outside
+                    },
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp),
+                        .padding(vertical = 8.dp,horizontal = 0.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -106,27 +126,58 @@ fun HomeScreen( navController: NavController,viewModel: RecipeViewModel = hiltVi
                     SmokingSkillet(navController)
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = HighlightLastTwoWords("Simple recipes with your inventory ingredients"),
                     fontSize = 18.sp,
                     textAlign = TextAlign.Start
                 )
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
+
+                OutlinedTextField(
+                    value = searchText,
+                    maxLines = 1,
+                    onValueChange = { newText -> searchText = newText },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    shape = RoundedCornerShape(24.dp),
+                    label = { Text(text="Search",  color = Color.Black, modifier =Modifier.background(Color.Transparent)) },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = null,
+                            tint = Color.Black // Icon color
+                        )
+                    },
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent, // Remove background when focused
+                        unfocusedContainerColor = Color.Transparent, // Remove background when unfocused
+                        disabledContainerColor = Color.Transparent, // Remove background when disabled
+                        focusedTextColor = Color.Black, // Text color when focused
+                        unfocusedTextColor = Color.Black, // Text color when unfocused
+                        disabledTextColor = Color.Gray, // Text color when disabled
+                        focusedLabelColor = Color(0xFFF46D42), // Label color when focused
+                        unfocusedLabelColor = Color.Black, // Label color when unfocused
+                        focusedIndicatorColor = Color(0xFFF46D42), // Border color when focused
+                        unfocusedIndicatorColor = Color.Black, // Border color when unfocused
+                        disabledIndicatorColor = Color.Gray, // Border color when disabled
+                        cursorColor = Color(0xFFF46D42) // Cursor color
+                    )
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+
                 LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
 
-                    items(categoryList){
-                                        tab->
-                        categorieHomeTab(category = tab, isSelected = true ) {
-                            
+                    items(categoryList){ category ->
+                        categorieHomeTab(category = category, isSelected = selectedCategory == category) {
+                            selectedCategory = if (selectedCategory == category) null else category // Toggle selection
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
 
                 Box(
                     modifier = Modifier
@@ -134,13 +185,13 @@ fun HomeScreen( navController: NavController,viewModel: RecipeViewModel = hiltVi
                     contentAlignment = Alignment.Center
                 ) {
                     LazyRow(
-
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
 
                         modifier = Modifier
                             .wrapContentWidth()
-                            .padding(0.dp, 0.dp, 0.dp, 0.dp)
                     ) {
-                        items(recipes) { recipe ->
+                        items(filteredRecipes) { recipe ->
 
                             RecipeCardWithImage(navController,
                                recipe = recipe
@@ -192,7 +243,7 @@ fun SmokingSkillet(navController:NavController) {
         modifier = Modifier
             .size(48.dp)
             .padding(end = 8.dp)
-            .clickable {
+            .clickable (){
                 navController.navigate("GenerateRecipe") {
                     popUpTo(navController.graph.startDestinationId) { saveState = true }
                     launchSingleTop = true
@@ -203,37 +254,46 @@ fun SmokingSkillet(navController:NavController) {
     )
 }
 @Composable
-fun categorieHomeTab(category : CategorieHome,isSelected: Boolean,  onClick: () -> Unit  ) {
-    Row(horizontalArrangement = Arrangement.SpaceAround,
+fun categorieHomeTab(
+    category: CategorieHome,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Row(
+        horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
-            .background(Color(0xFFF46D42), shape = RoundedCornerShape(28.dp))
-            .padding(8.dp, 8.dp).width(100.dp).height(24.dp)) {
-
+            .background(
+                if (isSelected) Color(0xFFF46D42) else Color(0x50F46D42),
+                shape = RoundedCornerShape(28.dp)
+            )
+            .clickable(onClick = onClick) // Trigger onClick
+            .padding(8.dp, 8.dp)
+            .width(100.dp)
+            .height(24.dp)
+    ) {
         Row(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.background(color = Color.White ,shape = CircleShape).padding(2.dp)
-        )
-           {
-                Image(
-                    painter = painterResource(id = category.image),
-                    contentDescription = "image Categorie Home",
-
-                )
-
-            }
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                text = category.text,
-                fontWeight = FontWeight.Bold,
-                color = Color.White,
-                fontSize = 12.sp,
-                maxLines = 1,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .background(color = Color.White, shape = CircleShape)
+                .padding(2.dp)
+        ) {
+            Image(
+                painter = painterResource(id = category.image),
+                contentDescription = "image Categorie Home",
             )
         }
-
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(
+            text = category.text,
+            fontWeight = FontWeight.Bold,
+            color = Color.White,
+            fontSize = 12.sp,
+            maxLines = 1,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
 }
 

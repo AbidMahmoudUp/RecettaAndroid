@@ -543,8 +543,8 @@ fun IngredientsHeader(recipe: Recipe) {
                IngredientsList(recipe = recipe)
            }
            "Steps" -> {
-               // Display Steps content
-               StepsList(steps = recipe.instructions) // Assuming `StepsList` and `recipe.steps` exist
+
+               StepsList(steps = recipe.instructions)
            }
        }
 }
@@ -555,10 +555,10 @@ fun StepsList(steps: List<String>) {
    {
        noIngrediantSection()
    }
-    else{val textSteps = steps[0].split(".").map { it.trim() }.filter { it.isNotEmpty() }
+    else{
 
     Column(Modifier.padding(16.dp)) {
-        textSteps.forEach { step ->
+        steps.forEach { step ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(vertical = 8.dp)
