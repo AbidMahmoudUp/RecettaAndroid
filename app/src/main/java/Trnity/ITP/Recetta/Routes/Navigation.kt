@@ -5,6 +5,7 @@ import HomeScreen
 import Trnity.ITP.Recetta.Data.remote.Requests.AuthDtos.UpdateUserDto
 import Trnity.ITP.Recetta.Model.entities.Recipe
 import Trnity.ITP.Recetta.View.AddIngredient
+import Trnity.ITP.Recetta.View.AuthScreens.Screen
 import Trnity.ITP.Recetta.View.Components.Items.NavItem
 import Trnity.ITP.Recetta.View.EditProfileScreen
 import Trnity.ITP.Recetta.View.FavoriteScreen
@@ -13,6 +14,8 @@ import Trnity.ITP.Recetta.View.InventoryScreen
 import Trnity.ITP.Recetta.View.ProfileScreen
 import Trnity.ITP.Recetta.View.RecipeScreen
 import Trnity.ITP.Recetta.View.ScannerScreen
+import Trnity.ITP.Recetta.View.StaticScreens.AboutUsScreen
+import Trnity.ITP.Recetta.View.StaticScreens.FAQsScreen
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -71,6 +74,40 @@ fun MainNavigation(navController: NavHostController) {
 //            "recipeScreen/{recipeId}",
 //            arguments = listOf(navArgument("recipeId") { type = NavType.StringType })
 //        ) {backStackEntry ->
+        composable(NavItem.Home.route) { HomeScreen(navController) }
+        composable(NavItem.Favorites.route) { FavoriteScreen(navController) }
+        composable(NavItem.Profile.route) { ProfileScreen(navController) }
+        composable(NavItem.Inventory.route) { InventoryScreen(navController)  }
+        composable("AddIngrediant") { AddIngredient(navController = navController)  }
+        composable("GenerateRecipe") { GenerateRecipeScreen(navController = navController)  }
+        composable(route = Screen.AboutUsScreen.route,) { AboutUsScreen(navController) }
+
+        composable(route = Screen.FQSsScreen.route){ FAQsScreen(navController) }
+        composable("GeneratedList/{recipes}", arguments = listOf(navArgument("recipes") {
+            type = NavType.StringType
+        })
+        ) { backStackEntry ->
+            val recipesJson = backStackEntry.arguments?.getString("recipes")
+            val recipes = Gson().fromJson(recipesJson, Array<Recipe>::class.java).toList()
+            GeneratedRecipeListScreen(navController = navController, recipes = recipes)
+        }
+
+
+        composable(route = "editProfile"+"/{responseJson}" ,
+            arguments = listOf(
+                navArgument("responseJson") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                    nullable = true
+                }
+            )
+        ) {
+                backStackEntry ->
+            val responseJson = backStackEntry.arguments?.getString("responseJson")
+            val response = Gson().fromJson(responseJson, UpdateUserDto::class.java)
+            EditProfileScreen(navController = navController , userData = response)
+        }
+
 //            val recipeId = backStackEntry.arguments?.getString("recipeId")
 //            Log.d("MainNavigation", "Navigating to RecipeScreen with recipeId: $recipeId")
 //

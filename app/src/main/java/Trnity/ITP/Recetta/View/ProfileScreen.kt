@@ -7,6 +7,7 @@ import Trnity.ITP.Recetta.R
 import Trnity.ITP.Recetta.View.AuthScreens.LoginTextField
 import Trnity.ITP.Recetta.View.AuthScreens.MainActivity
 import Trnity.ITP.Recetta.View.AuthScreens.Screen
+import Trnity.ITP.Recetta.ViewModel.AuthViewModel
 import Trnity.ITP.Recetta.ui.theme.dimens
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
@@ -39,6 +40,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,6 +56,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.rememberImagePainter
 import com.google.gson.Gson
 import retrofit2.Call
 import retrofit2.Callback
@@ -129,7 +132,7 @@ private fun emptyScreen(context: Context, navController: NavController) {
                     val editor = preferences.edit()
                     editor.putString("remember" , "false")
                     editor.apply()
-                    navController.navigate(Screen.LoginScreen.route)
+                    context.startActivity(Intent(context, MainActivity::class.java))
                 },
                 text = "go to login Screen",
                 style = MaterialTheme.typography.bodyMedium.copy(
@@ -496,24 +499,46 @@ fun ProfileSection(userData: UpdateUserDto, navController: NavController) {
             .background(Color.Transparent, RoundedCornerShape(12.dp))
             .padding(16.dp)
     ) {
-        // Profile Picture
+        val context = LocalContext.current
+        val preferences = context.getSharedPreferences("checkbox", MODE_PRIVATE)
+        val userId = preferences.getString("userId", "") ?: ""
+
+        // Create the AuthViewModel instance
+        val authViewModel = remember { AuthViewModel() }
+
+        // Trigger the image fetch when the Composable is first composed
+        LaunchedEffect(userId) {
+            if (userId.isNotEmpty()) {
+                authViewModel.getProfileImage(userId, context)
+            }
+        }
+
+        // Observe the imageUrl state from the ViewModel
+        val imageUrl = authViewModel.imageUrl.value
+
         Box(
             modifier = Modifier
                 .size(150.dp)
                 .background(Color.Gray, CircleShape)
-                .shadow(10.dp , shape = RoundedCornerShape(74.dp))
+                .shadow(10.dp, shape = RoundedCornerShape(74.dp))
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.profilepicexample),
-                contentDescription = "Profile Picture",
-                modifier = Modifier.fillMaxSize()
-                    .align(Alignment.Center),
-                contentScale = ContentScale.Crop,
-
-
+            if (imageUrl.isNotEmpty()) {
+                Image(
+                    painter = rememberImagePainter(imageUrl),
+                    contentDescription = "Profile Picture",
+                    modifier = Modifier.fillMaxSize().align(Alignment.Center),
+                    contentScale = ContentScale.Crop,
                 )
+            } else {
+                // Placeholder image when no profile image is found
+                Image(
+                    painter = painterResource(id = R.drawable.profilepicexample),
+                    contentDescription = "Profile Picture",
+                    modifier = Modifier.fillMaxSize().align(Alignment.Center),
+                    contentScale = ContentScale.Crop,
+                )
+            }
         }
-
         Column {
             Text(
                 text = userData.name.toString(),
