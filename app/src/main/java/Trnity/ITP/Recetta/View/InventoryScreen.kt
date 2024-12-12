@@ -120,7 +120,7 @@ fun InventoryScreen(
         ) {
 
             Text(text = if (isSelectionMode) "Select Items" else "Food Manager")
-            Spacer(modifier = Modifier.width(120.dp))
+            Spacer(modifier = Modifier.width(190.dp))
 
             IconButton(onClick = {
                 navController.navigate("scan")
