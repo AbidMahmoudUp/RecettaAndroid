@@ -3,8 +3,10 @@ package Trnity.ITP.Recetta.Data.remote.repository
 import Trnity.ITP.Recetta.Data.remote.Requests.UpdateUserInventory
 import Trnity.ITP.Recetta.Data.remote.api.InventoryApiService
 import Trnity.ITP.Recetta.Model.entities.Inventory
+import Trnity.ITP.Recetta.Model.entities.Recipe
 import Trnity.ITP.Recetta.Model.repositories.InventoryRepository
 import okhttp3.MultipartBody
+import retrofit2.Response
 
 class InventoryRepositoryImplementation(private  val inventoryApiService : InventoryApiService) : InventoryRepository{
     override suspend fun updateInventory(id: String,request:  UpdateUserInventory): Inventory {
@@ -27,6 +29,17 @@ class InventoryRepositoryImplementation(private  val inventoryApiService : Inven
             // Log the error if needed
             false // Return false if there's an error
         }
+    }
+
+    override suspend fun scanRecipe(fileImage: MultipartBody.Part): Response<Recipe>? {
+        try{
+            val response = inventoryApiService.scanRecipe(fileImage)
+            return response
+        }catch (e:Exception){
+            null
+        }
+
+        return null
     }
 
 

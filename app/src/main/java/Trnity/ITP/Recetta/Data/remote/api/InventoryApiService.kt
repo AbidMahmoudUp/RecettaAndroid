@@ -2,6 +2,7 @@ package Trnity.ITP.Recetta.Data.remote.api
 
 import Trnity.ITP.Recetta.Data.remote.Requests.UpdateUserInventory
 import Trnity.ITP.Recetta.Model.entities.Inventory
+import Trnity.ITP.Recetta.Model.entities.Recipe
 import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.Body
@@ -26,4 +27,7 @@ interface InventoryApiService {
     @Multipart
     @POST("inventory/updateInventoryWithImage/{id}")
     suspend fun updateInventoryWithImage(@Path("id") id: String, @Part request: MultipartBody.Part) : Response<Inventory>
+    @Multipart
+    @POST("generative-ia-recipe")
+    suspend fun scanRecipe(@Part file: MultipartBody.Part) : Response<Recipe>?
 }

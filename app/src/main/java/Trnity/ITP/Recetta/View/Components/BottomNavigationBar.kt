@@ -37,6 +37,13 @@ fun BottomNavigationBar(navController: NavController, onHeightChange: (Float) ->
                 label = { Text(item.title) },
                 selected = currentRoute == item.route,
                 onClick = {
+                    if(currentRoute == "home"){
+                        navController.navigate(item.route) {
+                            popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
                     if (currentRoute != item.route) {
                         navController.navigate(item.route) {
                             popUpTo(navController.graph.startDestinationId) { saveState = true }

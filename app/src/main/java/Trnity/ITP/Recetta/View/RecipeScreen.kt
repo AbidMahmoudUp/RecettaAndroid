@@ -259,6 +259,7 @@ fun ParallaxToolbar(
                     modifier = Modifier
                         .padding(horizontal = 16.dp) // Space between icons and title
                         .scale(1f - 0.15f * offsetProgress)
+                        .width(200.dp)
                 )
 
                 IconButton(onClick = { onFavoriteClick(!isFavorite) }) {
