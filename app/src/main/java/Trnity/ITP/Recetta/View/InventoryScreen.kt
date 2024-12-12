@@ -120,8 +120,17 @@ fun InventoryScreen(
         ) {
 
             Text(text = if (isSelectionMode) "Select Items" else "Food Manager")
-            Spacer(modifier = Modifier.width(190.dp))
-
+            
+            Spacer(modifier = Modifier.width(130.dp))
+            IconButton(onClick = {
+                navController.navigate("scanRecipe")
+            }, content = {
+                Icon(
+                    painter = painterResource(id = R.drawable.scan_dish),
+                    contentDescription = "Scan Ingredient"
+                )
+            })
+            
             IconButton(onClick = {
                 navController.navigate("scan")
             }, content = {

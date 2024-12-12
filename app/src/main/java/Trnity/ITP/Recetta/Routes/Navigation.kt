@@ -13,6 +13,7 @@ import Trnity.ITP.Recetta.View.GenerateRecipeScreen
 import Trnity.ITP.Recetta.View.InventoryScreen
 import Trnity.ITP.Recetta.View.ProfileScreen
 import Trnity.ITP.Recetta.View.RecipeScreen
+import Trnity.ITP.Recetta.View.ScannerRecipeScreen
 import Trnity.ITP.Recetta.View.ScannerScreen
 import Trnity.ITP.Recetta.View.StaticScreens.AboutUsScreen
 import Trnity.ITP.Recetta.View.StaticScreens.FAQsScreen
@@ -130,6 +131,7 @@ fun MainNavigation(navController: NavHostController) {
 
 
         composable("scan") { ScannerScreen(navController) }
+        composable("scanRecipe") {ScannerRecipeScreen(navController)  }
 
     }
 }

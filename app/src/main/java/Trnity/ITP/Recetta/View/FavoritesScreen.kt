@@ -2,10 +2,12 @@ package Trnity.ITP.Recetta.View
 
 
 import Trnity.ITP.Recetta.Data.Local.RecipeEntity
+import Trnity.ITP.Recetta.Model.entities.Recipe
 import Trnity.ITP.Recetta.R
 import Trnity.ITP.Recetta.ViewModel.RecipeViewModel
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -56,6 +58,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import com.google.gson.Gson
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 
 @Composable
@@ -76,13 +82,13 @@ fun FavoriteScreen(navController: NavController, recipeViewModel: RecipeViewMode
         recipeViewModel.loadFavorites()
     }
 
-    CardsList(favorites, recipeViewModel) // Pass recipeViewModel to CardsList
+    CardsList(navController,favorites, recipeViewModel) // Pass recipeViewModel to CardsList
 }
 
 
 
 @Composable
-fun CardsList(favorites: List<RecipeEntity>, recipeViewModel: RecipeViewModel) {
+fun CardsList(navController: NavController,favorites: List<RecipeEntity>, recipeViewModel: RecipeViewModel) {
     val categories = arrayOf("Meals", "Drinks", "Breakfast", "Launch", "Dinner")
 
     Column(modifier = Modifier
@@ -126,7 +132,7 @@ fun CardsList(favorites: List<RecipeEntity>, recipeViewModel: RecipeViewModel) {
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             items(favorites.size) { index ->
-                CardItemFavorite(favorites[index], recipeViewModel) // Pass recipeViewModel here
+                CardItemFavorite(navController = navController,favorites[index], recipeViewModel) // Pass recipeViewModel here
             }
         }
         }
@@ -134,12 +140,13 @@ fun CardsList(favorites: List<RecipeEntity>, recipeViewModel: RecipeViewModel) {
 }
 
 @Composable
-fun CardItemFavorite(favorite: RecipeEntity, recipeViewModel: RecipeViewModel) {
+fun CardItemFavorite(navController: NavController,favorite: RecipeEntity, recipeViewModel: RecipeViewModel) {
     var showDialog by remember { mutableStateOf(false) }
 
     ElevatedCard(shape = RoundedCornerShape(16.dp), elevation = CardDefaults.cardElevation(8.dp)) {
         SingleItemFavCard(
             favorite = favorite,
+            navController = navController,
             onHeartClicked = {
                 // Show confirmation dialog on heart icon toggle
                 showDialog = true
@@ -173,10 +180,21 @@ fun CardItemFavorite(favorite: RecipeEntity, recipeViewModel: RecipeViewModel) {
 }
 
 @Composable
-fun SingleItemFavCard(favorite: RecipeEntity, onHeartClicked: () -> Unit) {
+fun SingleItemFavCard(navController: NavController,favorite: RecipeEntity, onHeartClicked: () -> Unit) {
+
+    fun navigateToDetails(recipe: Recipe) {
+        val jsonRecipe = Gson().toJson(recipe) // Serialize the Recipe object to JSON
+        val encodedRecipe = URLEncoder.encode(jsonRecipe, StandardCharsets.UTF_8.toString()) // Encode the JSON
+        navController.navigate("recipeScreen/$encodedRecipe") {
+            popUpTo(navController.graph.startDestinationId){inclusive = true}
+
+
+        }
+    }
     Column(
         modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+
     ) {
         IconButton(onClick = onHeartClicked, modifier = Modifier.align(Alignment.End)) {
             Icon(
@@ -185,9 +203,10 @@ fun SingleItemFavCard(favorite: RecipeEntity, onHeartClicked: () -> Unit) {
                 tint = Color(0xFFF96115)
             )
         }
+        val directImageUrl = "http://192.168.43.232:3000/uploads/"
 
-        Image(
-            painter = painterResource(R.drawable.spaghetti), // Replace with dynamic image URL if needed
+        AsyncImage(
+            model = directImageUrl + favorite.imageRecipe , // Replace with dynamic image URL if needed
             contentDescription = "Recipe Image",
             modifier = Modifier.padding(8.dp)
         )
@@ -200,10 +219,10 @@ fun SingleItemFavCard(favorite: RecipeEntity, onHeartClicked: () -> Unit) {
                 .padding(8.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            TextWithIcons(R.drawable.clock, "20 min", 0xFF06402B)
-            TextWithIcons(R.drawable.star_unfilled, "5.0", 0xFFF96115)
+            TextWithIcons(R.drawable.clock, favorite.cookingTime+"min", 0xFF06402B)
+            TextWithIcons(R.drawable.star_unfilled, favorite.rating+"5.0", 0xFFF96115)
         }
-
+        Log.d("Ingredient Recipe :" ,favorite.ingredients.toString())
         Text(
             text = favorite.description,
             modifier = Modifier.padding(horizontal = 8.dp),
@@ -218,8 +237,9 @@ fun SingleItemFavCard(favorite: RecipeEntity, onHeartClicked: () -> Unit) {
                 .padding(8.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            TextWithIcons(R.drawable.kcal, "630 Kcal", 0xFFF96115)
-            IconButton(onClick = onHeartClicked) {
+            TextWithIcons(R.drawable.kcal, favorite.energy+"Kcal", 0xFFF96115)
+            val recipe = Recipe(favorite.id,favorite.title,favorite.description,favorite.imageRecipe,favorite.category,favorite.cookingTime,favorite.energy,favorite.rating,favorite.ingredients,favorite.instructions)
+            IconButton(onClick = {  navigateToDetails (recipe) }) {
                 Icon(Icons.Outlined.KeyboardArrowRight, "")
             }
         }

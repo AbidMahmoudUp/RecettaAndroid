@@ -43,7 +43,7 @@ fun navigateToDetails(recipe: Recipe) {
     val jsonRecipe = Gson().toJson(recipe) // Serialize the Recipe object to JSON
     val encodedRecipe = URLEncoder.encode(jsonRecipe, StandardCharsets.US_ASCII.toString()) // Encode the JSON
     navController.navigate("recipeScreen/$encodedRecipe") {
-        popUpTo(navController.graph.startDestinationId) { saveState = true }
+        popUpTo(navController.graph.startDestinationId) {  }
         launchSingleTop = true
         restoreState = true
     }
