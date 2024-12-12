@@ -56,21 +56,29 @@ import Trnity.ITP.Recetta.View.AuthScreens.LoginTextField
 import Trnity.ITP.Recetta.View.AuthScreens.Screen
 import Trnity.ITP.Recetta.View.AuthScreens.comparePasswords
 import Trnity.ITP.Recetta.View.AuthScreens.passwordValidationFP
+import Trnity.ITP.Recetta.ViewModel.AuthViewModel
 import Trnity.ITP.Recetta.ui.theme.dimens
+import android.content.ContentResolver
+import android.provider.MediaStore
+import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
+import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.InputStream
 
 
 @Composable
 fun EditProfileScreen(navController: NavController , userData : UpdateUserDto) {
-   val context = LocalContext.current
+    val context = LocalContext.current
 
     var updatedEmail by remember { mutableStateOf(userData.email) }
     var updatedPhoneNumber by remember { mutableStateOf(userData.phone) }
     var updatedUserName by remember { mutableStateOf(userData.name) }
-
     Surface {
         Column(
             modifier = Modifier
@@ -78,15 +86,15 @@ fun EditProfileScreen(navController: NavController , userData : UpdateUserDto) {
                 .background(Color(0xFFFFFFFF))
                 .padding(16.dp), Arrangement.Top, Alignment.CenterHorizontally
         ) {
+            var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
 
-            ProfileSection(navController, updatedUserName) { updatedName ->
+            EditedProfileSection(navController, updatedUserName ,onImageChange = { uri -> selectedImageUri = uri }, onUserNameChange = { updatedName ->
                 updatedUserName = updatedName
-            }
+            })
             val preferences = context.getSharedPreferences("checkbox", MODE_PRIVATE)
             val accT = preferences.getString("accToken","")
             //  val refT = preferences.getString("RefToken","")
             val user_id = preferences.getString("userId","")
-
             Spacer(modifier = Modifier.height(20.dp))
             OptionsSection(accT.toString(),userData,newEmailValue = updatedEmail,
                 onEmailChange = { updatedEmail = it },
@@ -94,7 +102,8 @@ fun EditProfileScreen(navController: NavController , userData : UpdateUserDto) {
                 onPhoneChange = { updatedPhoneNumber = it })
             Spacer(modifier = Modifier.height(20.dp))
             var updatedUser = UpdateUserDto(userId  = user_id.toString() , name = updatedUserName , phone = updatedPhoneNumber , email = if(userData.email == updatedEmail) "" else updatedEmail)
-            UpdateSection(context ,navController ,updatedUser , accT.toString())
+
+            UpdateSection(context ,navController ,profile_Img = selectedImageUri ,updatedUser , accT.toString())
 
 
 
@@ -107,7 +116,7 @@ fun EditProfileScreen(navController: NavController , userData : UpdateUserDto) {
 
 @Composable
 fun OptionsSection( accT: String,userData: UpdateUserDto,
-    newEmailValue: String,
+                    newEmailValue: String,
                     onEmailChange: (String) -> Unit,
                     newPhoneValue: String,
                     onPhoneChange: (String) -> Unit) {
@@ -167,8 +176,8 @@ fun OptionsSection( accT: String,userData: UpdateUserDto,
                             changePasswordTF = false
                             newEmailTF = newEmailTF.not()
                             newPhoneNumberTF = false
-                                   },
-                    )
+                        },
+                )
 
             }
 
@@ -221,7 +230,7 @@ fun OptionsSection( accT: String,userData: UpdateUserDto,
                             changePasswordTF = false
                             newEmailTF = false
                             newPhoneNumberTF = newPhoneNumberTF.not()
-                                   },
+                        },
 
                     )
 
@@ -430,7 +439,7 @@ fun OptionsSection( accT: String,userData: UpdateUserDto,
 
                                         }                                        }
 
-                            },
+                                },
                             text = "Next",
                             color = Color.Blue,
                             fontSize = 18.sp,
@@ -440,7 +449,7 @@ fun OptionsSection( accT: String,userData: UpdateUserDto,
                     }
 
 
-            }
+                }
             }
 
 
@@ -492,10 +501,33 @@ fun confirmUpdateAlert(
     }
 }
 
+fun getFileFromUri(context: Context, uri: Uri): File? {
+    // Check if the URI is a file URI or a content URI
+    if (uri.scheme == "content") {
+        // If it's a content URI (from gallery, etc.), resolve it
+        val cursor = context.contentResolver.query(uri, null, null, null, null)
+        cursor?.let {
+            if (it.moveToFirst()) {
+                val columnIndex = it.getColumnIndex(MediaStore.Images.Media.DATA)
+                val filePath = it.getString(columnIndex)
+                it.close()
+                return File(filePath) // Return the file from the resolved path
+            }
+        }
+    } else if (uri.scheme == "file") {
+        // If it's already a file URI, just convert it to a File object
+        return File(uri.path)
+    }
+
+    return null // Return null if we can't resolve the URI
+}
+
 
 @Composable
-fun UpdateSection(context: Context , navController: NavController , updatedUser : UpdateUserDto , accToken :String) {
+fun UpdateSection(context: Context , navController: NavController ,profile_Img : Uri? ,updatedUser : UpdateUserDto , accToken :String) {
     var showDialog by remember { mutableStateOf(false) }
+
+    val authViewModel = remember { AuthViewModel() }
     Column(
         horizontalAlignment =  Alignment.CenterHorizontally,
         verticalArrangement =  Arrangement.spacedBy(16.dp),
@@ -513,6 +545,25 @@ fun UpdateSection(context: Context , navController: NavController , updatedUser 
         confirmUpdateAlert("Update Changes ","Are you sure you want to make those Changes ",
             showDialog = showDialog,
             onConfirm = {
+                val preferences = context.getSharedPreferences("checkbox", MODE_PRIVATE)
+                val user_id = preferences.getString("userId","")
+
+                val file = profile_Img?.let { uri ->
+                    getFileFromUri(context, uri) // Convert content URI to File
+                }
+
+                println("Selected file path: ${file?.absolutePath}") // Debugging line
+
+                if (file != null && file.exists()) {
+                    println("File exists, proceeding with upload")
+                    // Call uploadImage inside a coroutine
+                    authViewModel.viewModelScope.launch {
+                        authViewModel.uploadImage(file, user_id.toString())
+                    }
+                } else {
+                    println("File does not exist or could not be resolved")
+                }
+
                 println(updatedUser)
                 val Tokena = "Bearer "+ accToken
                 val call = RetrofitInstance.api.updateProfile(updatedUser , Tokena)
@@ -576,7 +627,7 @@ fun UpdateSection(context: Context , navController: NavController , updatedUser 
 }
 
 @Composable
-fun ProfileSection( navController: NavController , newUserName: String ,onUserNameChange: (String) -> Unit) {
+fun EditedProfileSection( navController: NavController , newUserName: String ,onUserNameChange: (String) -> Unit ,onImageChange: (Uri?) -> Unit ) {
 
     var imageUri by remember {
         mutableStateOf<Uri?>(null)
@@ -586,6 +637,7 @@ fun ProfileSection( navController: NavController , newUserName: String ,onUserNa
         onResult = { uri ->
             uri?.let {
                 imageUri = it
+                onImageChange(it)
             }
         }
     )
@@ -599,7 +651,7 @@ fun ProfileSection( navController: NavController , newUserName: String ,onUserNa
                 .clickable {
                     navController.popBackStack()
                 }
-            )
+        )
     }
     Column(
         horizontalAlignment =  Alignment.CenterHorizontally,
@@ -629,6 +681,7 @@ fun ProfileSection( navController: NavController , newUserName: String ,onUserNa
                     contentScale = ContentScale.Crop
                 )
             } else {
+
 
                 Image(
                     painter = painterResource(id = R.drawable.profilepicexample),
@@ -694,6 +747,7 @@ fun ProfileSection( navController: NavController , newUserName: String ,onUserNa
                 }
             )
         }
+
 
 
     }

@@ -10,12 +10,19 @@ import Trnity.ITP.Recetta.Data.remote.Requests.AuthDtos.RefreshResponseDto
 import Trnity.ITP.Recetta.Data.remote.Requests.AuthDtos.RefreshTokenDto
 import Trnity.ITP.Recetta.Data.remote.Requests.AuthDtos.ResetPasswordDto
 import Trnity.ITP.Recetta.Data.remote.Requests.AuthDtos.UpdateUserDto
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import okhttp3.ResponseBody
 import  retrofit2.Call
+import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.PUT
-
+import retrofit2.http.Part
+import retrofit2.http.Path
 interface IAuth {
     @POST("auth/login")
     fun getLoginResponse(@Body userAuth: userAuth): Call<LoginResponse>
@@ -42,4 +49,14 @@ interface IAuth {
 
     @POST("auth/DeleteUser")
     fun deleteAccount(@Body user: UpdateUserDto): Call<String>
+
+    @GET("auth/profile-image/{userId}")
+    fun getProfileImage(@Path("userId") userId: String): Call<ResponseBody>
+
+    @Multipart
+    @POST("auth/upload_profile_image")
+    suspend fun uploadProfileImage(
+        @Part file: MultipartBody.Part,
+        @Part("userId") userId: RequestBody
+    ): Response<ResponseBody>
 }
