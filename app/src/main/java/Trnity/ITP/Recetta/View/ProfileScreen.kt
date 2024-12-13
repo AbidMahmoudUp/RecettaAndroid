@@ -12,6 +12,7 @@ import Trnity.ITP.Recetta.ui.theme.dimens
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.content.Intent
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -56,6 +57,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import coil.compose.rememberImagePainter
 import com.google.gson.Gson
 import retrofit2.Call
@@ -87,6 +89,7 @@ fun ProfileScreen(navController: NavController) {
                 userData = response.body()!!
                 dataLoaded = true
                 println("response ::::: "+ userData.name)
+                Log.d("azeazeazea" , userData.profileImage)
             }
         }
 
@@ -523,12 +526,13 @@ fun ProfileSection(userData: UpdateUserDto, navController: NavController) {
                 .shadow(10.dp, shape = RoundedCornerShape(74.dp))
         ) {
             if (imageUrl.isNotEmpty()) {
-                Image(
-                    painter = rememberImagePainter(imageUrl),
+                AsyncImage(
+                    model = ("http://192.168.43.232:3000/uploads/"+userData.profileImage),
                     contentDescription = "Profile Picture",
                     modifier = Modifier.fillMaxSize().align(Alignment.Center),
                     contentScale = ContentScale.Crop,
                 )
+                Log.d("message String " , "http://192.168.43.232:3000/uploads/"+imageUrl)
             } else {
                 // Placeholder image when no profile image is found
                 Image(
@@ -553,6 +557,11 @@ fun ProfileSection(userData: UpdateUserDto, navController: NavController) {
             onClick = {
                 val json = Gson().toJson(userData)
                 navController.navigate("editProfile" +"/$json")
+                {
+                    popUpTo(navController.graph.startDestinationId) { saveState = true }
+                    launchSingleTop = true
+                    restoreState = true
+                }
             },
             colors = ButtonDefaults.buttonColors(  Color(0xFFFF6F00)),
             shape = RoundedCornerShape(20.dp),

@@ -500,7 +500,7 @@ fun confirmUpdateAlert(
         )
     }
 }
-
+/*
 fun getFileFromUri(context: Context, uri: Uri): File? {
     // Check if the URI is a file URI or a content URI
     if (uri.scheme == "content") {
@@ -520,6 +520,20 @@ fun getFileFromUri(context: Context, uri: Uri): File? {
     }
 
     return null // Return null if we can't resolve the URI
+}
+*/
+fun getFileFromUri(context: Context, uri: Uri): File? {
+    return try {
+        val inputStream = context.contentResolver.openInputStream(uri)
+        val file = File(context.cacheDir, "temp_image_${System.currentTimeMillis()}.jpg")
+        file.outputStream().use { output ->
+            inputStream?.copyTo(output)
+        }
+        file
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
+    }
 }
 
 

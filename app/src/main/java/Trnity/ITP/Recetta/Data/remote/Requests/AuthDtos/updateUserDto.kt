@@ -6,4 +6,5 @@ data class UpdateUserDto(
     var age: Number = 0,
     var email: String = "",
     var phone:String = "",
+    var profileImage : String = ""
 )
