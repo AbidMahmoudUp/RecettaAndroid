@@ -60,7 +60,9 @@ import Trnity.ITP.Recetta.ViewModel.AuthViewModel
 import Trnity.ITP.Recetta.ui.theme.dimens
 import android.content.ContentResolver
 import android.provider.MediaStore
+import android.util.Log
 import androidx.lifecycle.viewModelScope
+import coil.compose.AsyncImage
 import com.google.gson.Gson
 import kotlinx.coroutines.launch
 import retrofit2.Call
@@ -88,7 +90,7 @@ fun EditProfileScreen(navController: NavController , userData : UpdateUserDto) {
         ) {
             var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
 
-            EditedProfileSection(navController, updatedUserName ,onImageChange = { uri -> selectedImageUri = uri }, onUserNameChange = { updatedName ->
+            EditedProfileSection(navController ,updatedUserName , prof_img = userData.profileImage.toString(),onImageChange = { uri -> selectedImageUri = uri }, onUserNameChange = { updatedName ->
                 updatedUserName = updatedName
             })
             val preferences = context.getSharedPreferences("checkbox", MODE_PRIVATE)
@@ -120,6 +122,7 @@ fun OptionsSection( accT: String,userData: UpdateUserDto,
                     onEmailChange: (String) -> Unit,
                     newPhoneValue: String,
                     onPhoneChange: (String) -> Unit) {
+    val context = LocalContext.current
     Column(
         horizontalAlignment =  Alignment.CenterHorizontally,
         verticalArrangement =  Arrangement.spacedBy(16.dp),
@@ -289,31 +292,33 @@ fun OptionsSection( accT: String,userData: UpdateUserDto,
 
             }
 
-
+// State variables
             var password by remember { mutableStateOf("") }
+            var repeatPassword by remember { mutableStateOf("") }
+            var oldPassword by remember { mutableStateOf("") }
+            var oldPasswordConfirmed by remember { mutableStateOf(false) }
+            var errorPassword by remember { mutableStateOf("") }
+            var errorRepeatPassword by remember { mutableStateOf("") }
+            var errorOldPassword by remember { mutableStateOf("") }
+            var passwordVisibility by remember { mutableStateOf(false) }
+            var repeatPasswordVisibility by remember { mutableStateOf(false) }
+            var oldPasswordVisibility by remember { mutableStateOf(false) }
+
             if (changePasswordTF) {
-                var oldPasswordConfirmed by remember { mutableStateOf(false) }
+                if (oldPasswordConfirmed) {
+                    // Icon for old password visibility
+                    val oldPasswordIcon = if (oldPasswordVisibility) R.drawable.baseline_visibility_24 else R.drawable.baseline_visibility_off_24
 
-
-                if(oldPasswordConfirmed){
-
-                    var oldPassword by remember { mutableStateOf("") }
-                    var errorOldPassword by remember { mutableStateOf("") }
-                    var passwordVisibility by remember { mutableStateOf(false) }
-
-                    val icon =
-                        if (passwordVisibility) R.drawable.baseline_visibility_24 else R.drawable.baseline_visibility_off_24
                     Spacer(modifier = Modifier.height(MaterialTheme.dimens.small3))
 
                     LoginTextField(
-                        error = !errorOldPassword.isEmpty(),
+                        error = errorOldPassword.isNotEmpty(),
                         label = "Old Password",
-                        trailing = icon,
-                        passwordVisibility = passwordVisibility,
+                        trailing = oldPasswordIcon,
+                        passwordVisibility = oldPasswordVisibility,
                         onTrailingClick = {
-                            passwordVisibility = !passwordVisibility
+                            oldPasswordVisibility = !oldPasswordVisibility
                         },
-
                         value = oldPassword,
                         onValueChange = { newPassword -> oldPassword = newPassword },
                         modifier = Modifier.fillMaxWidth()
@@ -321,62 +326,50 @@ fun OptionsSection( accT: String,userData: UpdateUserDto,
                     Spacer(modifier = Modifier.height(MaterialTheme.dimens.small3))
                     Text(errorOldPassword, color = Color.Red)
                     Spacer(modifier = Modifier.height(MaterialTheme.dimens.small2))
+
                     Row {
-
                         Text(
-                            modifier = Modifier.padding(start = 270.dp )
+                            modifier = Modifier.padding(start = 270.dp)
                                 .clickable {
+                                    val token = "Bearer $accT"
+                                    val preferences = context.getSharedPreferences("checkbox", MODE_PRIVATE)
+                                    val userId = preferences.getString("userId", "") ?: ""
 
-                                    val Tokena = "Bearer "+accT.toString()
-                                    val Creds = ChangePasswordDto(userData.userId.toString() ,  oldPassword ,password)
-                                    val call = RetrofitInstance.api.changePassword(Creds ,Tokena)
+                                    val creds = ChangePasswordDto(userId, oldPassword, password)
+                                    println("Variables for changePassword: $creds")
+
+                                    val call = RetrofitInstance.api.changePassword(creds, token)
                                     call.enqueue(object : Callback<String> {
                                         override fun onResponse(call: Call<String>, response1: Response<String>) {
-
-                                            println(response1)
-                                            println("Code :::: "+response1.code())
-                                            println("messagee ::::::"+response1.message())
-                                            println("body ::::::"+response1.body())
+                                            changePasswordTF = !changePasswordTF
+                                            println("Response: ${response1.body()}")
+                                            println("Code: ${response1.code()}, Message: ${response1.message()}")
                                         }
 
                                         override fun onFailure(call: Call<String>, t: Throwable) {
-                                            println(t.message)
-
+                                            println("Failure: ${t.message}")
                                         }
                                     })
-
-
-
                                 },
                             text = "Confirm",
                             color = Color.Blue,
                             fontSize = 18.sp,
                             textDecoration = TextDecoration.Underline
-
                         )
                     }
-
-
-                }else{
-
-                    var password by remember { mutableStateOf("") }
-                    var repeatPassword by remember { mutableStateOf("") }
-
-                    var errorPassword by remember { mutableStateOf("") }
-                    var errorRepeatPassword by remember { mutableStateOf("") }
-                    var passworVisibility by remember { mutableStateOf(false) }
-                    val icon =
-                        if (passworVisibility) R.drawable.baseline_visibility_24 else R.drawable.baseline_visibility_off_24
+                } else {
+                    // Icon for new password visibility
+                    val newPasswordIcon = if (passwordVisibility) R.drawable.baseline_visibility_24 else R.drawable.baseline_visibility_off_24
+                    val repeatPasswordIcon = if (repeatPasswordVisibility) R.drawable.baseline_visibility_24 else R.drawable.baseline_visibility_off_24
 
                     LoginTextField(
-                        error = !errorPassword.isEmpty(),
+                        error = errorPassword.isNotEmpty(),
                         label = "New Password",
-                        trailing = icon,
-                        passwordVisibility = passworVisibility,
+                        trailing = newPasswordIcon,
+                        passwordVisibility = passwordVisibility,
                         onTrailingClick = {
-                            passworVisibility = !passworVisibility
+                            passwordVisibility = !passwordVisibility
                         },
-
                         value = password,
                         onValueChange = { newPassword -> password = newPassword },
                         modifier = Modifier.fillMaxWidth()
@@ -385,18 +378,13 @@ fun OptionsSection( accT: String,userData: UpdateUserDto,
                     Text(errorPassword, color = Color.Red)
                     Spacer(modifier = Modifier.height(MaterialTheme.dimens.small2))
 
-                    var repeatPassworVisibility by remember { mutableStateOf(false) }
-                    val icon1 =
-                        if (repeatPassworVisibility) R.drawable.baseline_visibility_24 else R.drawable.baseline_visibility_off_24
-
                     LoginTextField(
-                        error = !errorRepeatPassword.isEmpty(),
+                        error = errorRepeatPassword.isNotEmpty(),
                         label = "Confirm Password",
-                        trailing = icon1,
-                        passwordVisibility = repeatPassworVisibility,
+                        trailing = repeatPasswordIcon,
+                        passwordVisibility = repeatPasswordVisibility,
                         onTrailingClick = {
-                            repeatPassworVisibility = !repeatPassworVisibility
-
+                            repeatPasswordVisibility = !repeatPasswordVisibility
                         },
                         value = repeatPassword,
                         onValueChange = { newPassword -> repeatPassword = newPassword },
@@ -405,24 +393,23 @@ fun OptionsSection( accT: String,userData: UpdateUserDto,
                     Spacer(modifier = Modifier.height(MaterialTheme.dimens.small2))
                     Text(errorRepeatPassword, color = Color.Red)
                     Spacer(modifier = Modifier.height(MaterialTheme.dimens.small2))
+
                     Row {
-
                         Text(
-                            modifier = Modifier.padding(start = 300.dp )
+                            modifier = Modifier.padding(start = 300.dp)
                                 .clickable {
-                                    errorPassword=""
-                                    errorRepeatPassword=""
+                                    errorPassword = ""
+                                    errorRepeatPassword = ""
 
-                                    if (password.isEmpty())
-                                    {
+                                    if (password.isEmpty()) {
                                         errorPassword = "Type your New Password"
                                     }
-                                    if (repeatPassword.isEmpty())
-                                    {
+                                    if (repeatPassword.isEmpty()) {
                                         errorRepeatPassword = "You have to Retype your Password"
                                     }
                                     when {
                                         password.isEmpty() || repeatPassword.isEmpty() -> {
+                                            // Errors are already set above
                                         }
                                         !passwordValidationFP(password) -> {
                                             errorPassword = if (password.length < 8) {
@@ -431,25 +418,23 @@ fun OptionsSection( accT: String,userData: UpdateUserDto,
                                                 "Your Password must contain at least one number"
                                             }
                                         }
-                                        !comparePasswords(password,repeatPassword) ->{
-                                            errorRepeatPassword="Password mismatch. Ensure both fields are identical."
+                                        !comparePasswords(password, repeatPassword) -> {
+                                            errorRepeatPassword = "Password mismatch. Ensure both fields are identical."
                                         }
                                         else -> {
                                             oldPasswordConfirmed = true
-
-                                        }                                        }
-
+                                        }
+                                    }
                                 },
                             text = "Next",
                             color = Color.Blue,
                             fontSize = 18.sp,
                             textDecoration = TextDecoration.Underline
-
                         )
                     }
-
-
                 }
+            }
+
             }
 
 
@@ -458,7 +443,7 @@ fun OptionsSection( accT: String,userData: UpdateUserDto,
         }
 
     }
-}
+
 
 @Composable
 fun confirmUpdateAlert(
@@ -500,28 +485,7 @@ fun confirmUpdateAlert(
         )
     }
 }
-/*
-fun getFileFromUri(context: Context, uri: Uri): File? {
-    // Check if the URI is a file URI or a content URI
-    if (uri.scheme == "content") {
-        // If it's a content URI (from gallery, etc.), resolve it
-        val cursor = context.contentResolver.query(uri, null, null, null, null)
-        cursor?.let {
-            if (it.moveToFirst()) {
-                val columnIndex = it.getColumnIndex(MediaStore.Images.Media.DATA)
-                val filePath = it.getString(columnIndex)
-                it.close()
-                return File(filePath) // Return the file from the resolved path
-            }
-        }
-    } else if (uri.scheme == "file") {
-        // If it's already a file URI, just convert it to a File object
-        return File(uri.path)
-    }
 
-    return null // Return null if we can't resolve the URI
-}
-*/
 fun getFileFromUri(context: Context, uri: Uri): File? {
     return try {
         val inputStream = context.contentResolver.openInputStream(uri)
@@ -641,7 +605,7 @@ fun UpdateSection(context: Context , navController: NavController ,profile_Img :
 }
 
 @Composable
-fun EditedProfileSection( navController: NavController , newUserName: String ,onUserNameChange: (String) -> Unit ,onImageChange: (Uri?) -> Unit ) {
+fun EditedProfileSection( navController: NavController , newUserName: String ,prof_img : String,onUserNameChange: (String) -> Unit ,onImageChange: (Uri?) -> Unit ) {
 
     var imageUri by remember {
         mutableStateOf<Uri?>(null)
@@ -697,12 +661,23 @@ fun EditedProfileSection( navController: NavController , newUserName: String ,on
             } else {
 
 
-                Image(
-                    painter = painterResource(id = R.drawable.profilepicexample),
-                    contentDescription = "Default Profile Picture",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
+                if (prof_img != null) {
+                    AsyncImage(
+                        model = ("http://10.0.2.2:3000/uploads/"+prof_img),
+                        contentDescription = "Profile Picture",
+                        modifier = Modifier.fillMaxSize().align(Alignment.Center),
+                        contentScale = ContentScale.Crop,
+                    )
+                    Log.d("message String " , "http://10.0.2.2:3000/uploads/"+prof_img)
+                } else {
+                    // Placeholder image when no profile image is found
+                    Image(
+                        painter = painterResource(id = R.drawable.profilepicexample),
+                        contentDescription = "Profile Picture",
+                        modifier = Modifier.fillMaxSize().align(Alignment.Center),
+                        contentScale = ContentScale.Crop,
+                    )
+                }
             }
             }
 

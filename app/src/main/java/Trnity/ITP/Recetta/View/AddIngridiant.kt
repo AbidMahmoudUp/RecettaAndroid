@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import noSearchResult
 
 @Composable
 fun navigationTitle(navController : NavController , title : String ){
@@ -380,6 +381,10 @@ fun FoodCard(ingredient: Ingredient , listOfIngredients :MutableSet<IngredientRe
 
 @Composable
 fun CardGridExample(ingredients:List<Ingredient> , listOfIngredients: MutableSet<IngredientRecipe>,onIngredientsUpdated: (MutableSet<IngredientRecipe>) -> Unit) {
+
+    if(ingredients.isEmpty()){
+        noSearchResult()
+    }
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),

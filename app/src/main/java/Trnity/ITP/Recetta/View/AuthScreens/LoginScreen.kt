@@ -5,7 +5,6 @@ import Trnity.ITP.Recetta.Data.remote.Requests.AuthDtos.userAuth
 import Trnity.ITP.Recetta.Data.remote.api.ApiInterfaces.RetrofitInstance
 import Trnity.ITP.Recetta.MainActivity
 import Trnity.ITP.Recetta.R
-import Trnity.ITP.Recetta.View.Components.Items.NavItem
 import Trnity.ITP.Recetta.ui.theme.Black
 import Trnity.ITP.Recetta.ui.theme.BlueGray
 import Trnity.ITP.Recetta.ui.theme.Roboto
@@ -51,6 +50,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -227,7 +227,7 @@ private fun LoginSection(navController: NavController , context: Context) {
     var passworVisibility by remember { mutableStateOf(false) }
     val icon = if (passworVisibility) R.drawable.baseline_visibility_24 else R.drawable.baseline_visibility_off_24
 
-    Spacer(modifier = Modifier.height(20.dp))
+    Spacer(modifier = Modifier.height(8.dp))
     Text(errorPassword, color =  Color.Red )
     LoginTextField(
         error = !errorPassword.isEmpty(),
@@ -277,10 +277,15 @@ private fun LoginSection(navController: NavController , context: Context) {
       }
 
     Spacer(modifier = Modifier.height(15.dp))
+    Row(
+        modifier = Modifier.fillMaxSize(),
+        verticalAlignment =   Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ){
     Button(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(MaterialTheme.dimens.medium3),
+            .width(350.dp)
+            .height(50.dp),
         onClick = {
             errorPassword=""
             errorEmail=""
@@ -340,16 +345,17 @@ private fun LoginSection(navController: NavController , context: Context) {
             })}
          },
         colors = ButtonDefaults.buttonColors(
-            containerColor = if (isSystemInDarkTheme()) BlueGray else Black,
+            containerColor = if (isSystemInDarkTheme()) BlueGray else Color(0xFFFF5722),
             contentColor = Color.White
         ),
-        shape = RoundedCornerShape(size = 4.dp)
+        shape = RoundedCornerShape(size = 35.dp)
     ) {
         Text(
             text = "Log in",
             style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium)
         )
     }
+        }
 }
 
 
@@ -377,52 +383,51 @@ fun EmailValidationLogin(email: String): Boolean {
     return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
 }
 
-
 @Composable
 private fun TopSection() {
     val uiColor = if (isSystemInDarkTheme()) Color.White else Black
     val screenHeight = LocalConfiguration.current.screenHeightDp
+    val logoHeight = (screenHeight / 4.5).dp // Adjust the logo size proportionally
+
     Box(
-        contentAlignment = Alignment.TopCenter
+        modifier = Modifier
+            .fillMaxWidth()
+             // Adjust top padding for spacing
     ) {
+        // Top-right corner shape
         Image(
             modifier = Modifier
-                .fillMaxWidth()
-                .height((screenHeight / 3.12).dp),
-            painter = painterResource(id = R.drawable.shape),
+                .size(180.dp) // Adjust size as necessary
+                .align(Alignment.TopEnd)
+                .padding(top = 0.dp, start = 28.dp), // Add padding to position the shape
+            painter = painterResource(id = R.drawable.shape), // Replace with your shape resource ID
             contentDescription = null,
-            contentScale = ContentScale.FillBounds
+            contentScale = ContentScale.Fit
         )
 
-
-        Row(
-            modifier = Modifier.padding(top = (screenHeight / 14).dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
-            Icon(
-                modifier = Modifier.size(MaterialTheme.dimens.logoSize),
-                painter = painterResource(id = R.drawable.logo),
-                contentDescription = stringResource(id = R.string.app_logo),
-                tint = uiColor
-            )
-            Spacer(modifier = Modifier.width(MaterialTheme.dimens.small2))
-            Column {
-                Text(
-                    text = stringResource(id = R.string.recetta),
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = uiColor
-                )
-            }
-        }
-
-        Text(
+        // Logo in the center
+        Column(
             modifier = Modifier
-                .padding(bottom = 5.dp)
-                .align(alignment = Alignment.BottomCenter),
-            text = stringResource(id = R.string.login),
-            style = MaterialTheme.typography.headlineLarge,
-            color = uiColor
-        )
+                .fillMaxWidth()
+                .padding(top = 120.dp), // Adjust spacing below the shape
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Image(
+                modifier = Modifier
+                    .fillMaxWidth(0.8f) // Restrict the width for better proportions
+                    .height(logoHeight) // Set logo height
+                    .padding(bottom = 16.dp), // Add bottom padding for better spacing
+                painter = painterResource(id = R.drawable.newlogo),
+                contentDescription = null,
+                contentScale = ContentScale.Fit // Ensure the image retains proportions
+            )
+
+            Text(
+                text = stringResource(id = R.string.sigintoyouraccount),
+                style = MaterialTheme.typography.headlineLarge,
+                color = uiColor,
+                modifier = Modifier.padding(top = 16.dp) // Adjust top padding
+            )
+        }
     }
 }

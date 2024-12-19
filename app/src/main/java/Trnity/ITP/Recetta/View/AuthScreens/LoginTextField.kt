@@ -79,8 +79,7 @@ private fun passwordTextField(label: String, trailing: Int,passwordVisibility :B
         trailingIcon = {
             IconButton(
                 onClick = onTrailingClick) {
-                Icon(painter = painterResource(trailing), contentDescription ="" )
-
+                Icon(painter = painterResource(trailing), contentDescription ="" ,tint = Color(0xFFFF5722) )
             }
 
 
@@ -121,7 +120,7 @@ private fun normalTextField(label: String, trailing: Int ,value: String,error : 
             focusedPlaceholderColor = MaterialTheme.colorScheme.focusedTextFieldText,
         ),
         trailingIcon = {
-         Icon(painter = painterResource(trailing) , contentDescription = "")
+         Icon(painter = painterResource(trailing) , contentDescription = "" ,tint = Color(0xFFFF5722))
 
         }
 
