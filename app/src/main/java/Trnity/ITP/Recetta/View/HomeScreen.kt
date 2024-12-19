@@ -184,6 +184,10 @@ fun HomeScreen( navController: NavController,viewModel: RecipeViewModel = hiltVi
                         .fillMaxWidth(),
                     contentAlignment = Alignment.Center
                 ) {
+                    if(filteredRecipes.isEmpty())
+                    {
+                        noSearchResult()
+                    }
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
                         verticalAlignment = Alignment.CenterVertically,
@@ -297,3 +301,38 @@ fun categorieHomeTab(
     }
 }
 
+@Composable
+fun noSearchResult() {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement= Arrangement.Center,
+    ) {
+
+        Column( modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement= Arrangement.Center,) {
+
+
+            Image(
+                painter = painterResource(R.drawable.search_not_found),
+                contentDescription = "Something went wrong",
+                modifier = Modifier
+                    .width(240.dp)
+                    .height(293.dp)
+                    .offset(y=-70.dp)
+            )
+
+            Text(
+                "No results match your search",
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                modifier = Modifier.fillMaxWidth().offset(y=-70.dp),
+                textAlign = TextAlign.Center
+            )
+
+
+
+        }
+    }
+}

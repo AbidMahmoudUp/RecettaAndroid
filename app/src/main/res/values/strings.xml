@@ -8,4 +8,5 @@
     <string name="signup">Sign Up</string>
     <string name="writecode">Write your Code</string>
     <string name="forgotpassword">Forget Password</string>
+    <string name="sigintoyouraccount">Sign Into Your Account</string>
 </resources>

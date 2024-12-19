@@ -89,7 +89,7 @@ fun ProfileScreen(navController: NavController) {
                 userData = response.body()!!
                 dataLoaded = true
                 println("response ::::: "+ userData.name)
-                Log.d("azeazeazea" , userData.profileImage)
+                Log.d("azeazeazea" , response.body().toString())
             }
         }
 
@@ -173,7 +173,7 @@ private fun profileSettingsSection(
             Spacer(modifier = Modifier.height(20.dp))
             DeleteAccountSection(data , navController , context)
 
-//
+
 //            Text(data?.userId.toString())
             Spacer(modifier = Modifier.height(5.dp))
 
@@ -527,12 +527,13 @@ fun ProfileSection(userData: UpdateUserDto, navController: NavController) {
         ) {
             if (imageUrl.isNotEmpty()) {
                 AsyncImage(
-                    model = ("http://192.168.43.232:3000/uploads/"+userData.profileImage),
+                    model = ("http://10.0.2.2:3000/uploads/"+userData.profileImage),
                     contentDescription = "Profile Picture",
                     modifier = Modifier.fillMaxSize().align(Alignment.Center),
                     contentScale = ContentScale.Crop,
                 )
-                Log.d("message String " , "http://192.168.43.232:3000/uploads/"+imageUrl)
+                Log.d("message String " , "http://10.0.2.2:3000/uploads/"+imageUrl)
+                Log.d("message String " , "http://10.0.2.2:3000/uploads/"+userData.profileImage)
             } else {
                 // Placeholder image when no profile image is found
                 Image(
@@ -628,7 +629,7 @@ private fun changePasswordTextField(navController: NavController, data: LoginRes
 
 
 
-    }
+        }
         ,
         colors = ButtonColors(
             Color(0xFFBF360C) ,

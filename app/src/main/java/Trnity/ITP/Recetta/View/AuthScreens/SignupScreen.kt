@@ -184,9 +184,9 @@ private fun ColumnScope.CreateAccountSection(navController :NavController) {
             onValueChange =  { newName -> name = newName },
             modifier = Modifier.fillMaxWidth(),
         )
-        Spacer(modifier = Modifier.height(MaterialTheme.dimens.small2))
+        Spacer(modifier = Modifier.height(8.dp))
         Text(nameError, color = Color.Red)
-        Spacer(modifier = Modifier.height(MaterialTheme.dimens.small2))
+        Spacer(modifier = Modifier.height(8.dp))
         LoginTextField(
             error = !emailError.isEmpty(),
             label = "Email",
@@ -201,7 +201,8 @@ private fun ColumnScope.CreateAccountSection(navController :NavController) {
 
         Spacer(modifier = Modifier.height(MaterialTheme.dimens.small2))
         Text(emailError, color = Color.Red)
-        Spacer(modifier = Modifier.height(MaterialTheme.dimens.small2))
+
+        Spacer(modifier = Modifier.height(8.dp))
         var passworVisibility by remember { mutableStateOf(false) }
         val icon = if (passworVisibility) R.drawable.baseline_visibility_24 else R.drawable.baseline_visibility_off_24
 
@@ -219,13 +220,13 @@ private fun ColumnScope.CreateAccountSection(navController :NavController) {
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(MaterialTheme.dimens.small2))
+        Spacer(modifier = Modifier.height(8.dp))
         Text(passwordError, color = Color.Red)
-        Spacer(modifier = Modifier.height(MaterialTheme.dimens.small3))
+        Spacer(modifier = Modifier.height(8.dp))
         Button(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(MaterialTheme.dimens.medium3),
+                .width(350.dp)
+                .height(50.dp),
             onClick = {
                 emailError =""
                 passwordError=""
@@ -293,10 +294,10 @@ private fun ColumnScope.CreateAccountSection(navController :NavController) {
                 }
             },
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (isSystemInDarkTheme()) BlueGray else Black,
+                containerColor = if (isSystemInDarkTheme()) BlueGray else Color(0xFFFF5722),
                 contentColor = Color.White
             ),
-            shape = RoundedCornerShape(size = 4.dp)
+            shape = RoundedCornerShape(size = 35.dp)
         ) {
             Text(
                 text = "Signup",
@@ -306,7 +307,6 @@ private fun ColumnScope.CreateAccountSection(navController :NavController) {
     }
 
 fun EmailValidation(email: String): Boolean {
-
 
     return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
 }
@@ -320,47 +320,47 @@ fun passwordValidation(password: String): Boolean {
 private fun TopSection() {
     val uiColor = if (isSystemInDarkTheme()) Color.White else Black
     val screenHeight = LocalConfiguration.current.screenHeightDp
+    val logoHeight = (screenHeight / 5).dp // Adjust the logo size proportionally
+
     Box(
-        contentAlignment = Alignment.TopCenter
+        modifier = Modifier
+            .fillMaxWidth()
+        // Adjust top padding for spacing
     ) {
+        // Top-right corner shape
         Image(
             modifier = Modifier
-                .fillMaxWidth()
-                .height((screenHeight / 3.12).dp),
-            painter = painterResource(id = R.drawable.shape),
+                .size(180.dp) // Adjust size as necessary
+                .align(Alignment.TopEnd)
+                .padding(top = 0.dp, start = 28.dp), // Add padding to position the shape
+            painter = painterResource(id = R.drawable.shape), // Replace with your shape resource ID
             contentDescription = null,
-            contentScale = ContentScale.FillBounds
+            contentScale = ContentScale.Fit
         )
 
-
-        Row(
-            modifier = Modifier.padding(top = (screenHeight / 14).dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
-            Icon(
-                modifier = Modifier.size(MaterialTheme.dimens.logoSize),
-                painter = painterResource(id = R.drawable.logo),
-                contentDescription = stringResource(id = R.string.app_logo),
-                tint = uiColor
-            )
-            Spacer(modifier = Modifier.width(MaterialTheme.dimens.small2))
-            Column {
-                Text(
-                    text = stringResource(id = R.string.recetta),
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = uiColor
-                )
-            }
-        }
-
-        Text(
+        // Logo in the center
+        Column(
             modifier = Modifier
-                .padding(bottom = 5.dp)
-                .align(alignment = Alignment.BottomCenter),
-            text = stringResource(id = R.string.signup),
-            style = MaterialTheme.typography.headlineLarge,
-            color = uiColor
-        )
+                .fillMaxWidth()
+                .padding(top = 120.dp), // Adjust spacing below the shape
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Image(
+                modifier = Modifier
+                    .fillMaxWidth(0.8f) // Restrict the width for better proportions
+                    .height(logoHeight) // Set logo height
+                    .padding(bottom = 16.dp), // Add bottom padding for better spacing
+                painter = painterResource(id = R.drawable.newlogo),
+                contentDescription = null,
+                contentScale = ContentScale.Fit // Ensure the image retains proportions
+            )
+
+            Text(
+                text = stringResource(id = R.string.sigintoyouraccount),
+                style = MaterialTheme.typography.headlineLarge,
+                color = uiColor,
+                modifier = Modifier.padding(top = 16.dp) // Adjust top padding
+            )
+        }
     }
 }

@@ -148,8 +148,8 @@ private fun EmailValidationSection(navController: NavController, onEmailValidate
     Spacer(modifier = Modifier.height(MaterialTheme.dimens.small2))
     Button(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(MaterialTheme.dimens.medium3),
+                .width(350.dp)
+                .height(50.dp),
         onClick = {
             errorEmail = ""
             potentialError1 = ""
@@ -176,10 +176,10 @@ private fun EmailValidationSection(navController: NavController, onEmailValidate
             }
         },
         colors = ButtonDefaults.buttonColors(
-            containerColor = if (isSystemInDarkTheme()) BlueGray else Black,
+            containerColor = if (isSystemInDarkTheme()) BlueGray else Color(0xFFFF5722),
             contentColor = Color.White
         ),
-        shape = RoundedCornerShape(size = 4.dp)
+        shape = RoundedCornerShape(size = 35.dp)
     ) {
         Text(
             text = "Send Code",
@@ -233,8 +233,8 @@ private fun CodeValidationSection(navController: NavController, correctCode: For
         val context = LocalContext.current
         Button(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(MaterialTheme.dimens.medium3),
+                    .width(350.dp)
+                    .height(50.dp),
             onClick = {
                 // Combine the OTP fields
                 val enteredCode = textList.joinToString("") { it.value.text.trim() }
@@ -243,7 +243,7 @@ private fun CodeValidationSection(navController: NavController, correctCode: For
                     errorMessage=""
                 val json = Gson().toJson(correctCode)
 
-                    navController.navigate(
+                 navController.navigate(
                         Screen.ForgetPasswordScreen.route+ "/$json"
                     )
                 } else {
@@ -252,10 +252,10 @@ private fun CodeValidationSection(navController: NavController, correctCode: For
                 }
             },
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (isSystemInDarkTheme()) BlueGray else Black,
+                containerColor = if (isSystemInDarkTheme()) BlueGray else Color(0xFFFF5722),
                 contentColor = Color.White
             ),
-            shape = RoundedCornerShape(size = 4.dp)
+            shape = RoundedCornerShape(size = 35.dp)
         ) {
             Text(
                 text = "Confirm",
@@ -383,49 +383,50 @@ BasicTextField(
 
 @Composable
 private fun TopSection() {
-    val uiColor = if (isSystemInDarkTheme()) Color.White else Black
-    val screenHeight = LocalConfiguration.current.screenHeightDp
-    Box(
-        contentAlignment = Alignment.TopCenter
-    ) {
-        Image(
+
+        val uiColor = if (isSystemInDarkTheme()) Color.White else Black
+        val screenHeight = LocalConfiguration.current.screenHeightDp
+        val logoHeight = (screenHeight / 5).dp // Adjust the logo size proportionally
+
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height((screenHeight / 2.12).dp),
-            painter = painterResource(id = R.drawable.shape),
-            contentDescription = null,
-            contentScale = ContentScale.FillBounds
-        )
-
-
-        Row(
-            modifier = Modifier.padding(top = (screenHeight / 9).dp),
-            verticalAlignment = Alignment.CenterVertically
+            // Adjust top padding for spacing
         ) {
-
-            Icon(
-                modifier = Modifier.size(MaterialTheme.dimens.logoSize),
-                painter = painterResource(id = R.drawable.logo),
-                contentDescription = stringResource(id = R.string.app_logo),
-                tint = uiColor
+            // Top-right corner shape
+            Image(
+                modifier = Modifier
+                    .size(180.dp) // Adjust size as necessary
+                    .align(Alignment.TopEnd)
+                    .padding(top = 0.dp, start = 28.dp), // Add padding to position the shape
+                painter = painterResource(id = R.drawable.shape), // Replace with your shape resource ID
+                contentDescription = null,
+                contentScale = ContentScale.Fit
             )
-            Spacer(modifier = Modifier.width(MaterialTheme.dimens.small2))
-            Column {
+
+            // Logo in the center
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 120.dp), // Adjust spacing below the shape
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Image(
+                    modifier = Modifier
+                        .fillMaxWidth(0.8f) // Restrict the width for better proportions
+                        .height(logoHeight) // Set logo height
+                        .padding(bottom = 16.dp), // Add bottom padding for better spacing
+                    painter = painterResource(id = R.drawable.newlogo),
+                    contentDescription = null,
+                    contentScale = ContentScale.Fit // Ensure the image retains proportions
+                )
+
                 Text(
-                    text = stringResource(id = R.string.recetta),
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = uiColor
+                    text = stringResource(id = R.string.forgotpassword),
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = uiColor,
+                    modifier = Modifier.padding(top = 16.dp) // Adjust top padding
                 )
             }
         }
-
-        Text(
-            modifier = Modifier
-                .padding(bottom = 10.dp)
-                .align(alignment = Alignment.BottomCenter),
-            text = stringResource(id = R.string.forgotpassword),
-            style = MaterialTheme.typography.headlineLarge,
-            color = uiColor
-        )
     }
-}

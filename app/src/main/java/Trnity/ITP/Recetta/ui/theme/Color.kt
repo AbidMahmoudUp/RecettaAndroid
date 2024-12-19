@@ -31,7 +31,7 @@ val ColorScheme.focusedTextFieldText
 
 val ColorScheme.unfocusedTextFieldText
     @Composable
-    get() = if (isSystemInDarkTheme()) Color(0xFF94A3B8) else Color(0xFF475569)
+    get() = if (isSystemInDarkTheme()) Color(0xFFE3E5E7) else Color(0xFF475569)
 val ColorScheme.TextFieldContainer
     @Composable
     get() = if (isSystemInDarkTheme()) BlueGray.copy(alpha = 0.6f) else LightBlueWhite

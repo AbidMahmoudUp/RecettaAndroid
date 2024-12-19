@@ -139,7 +139,7 @@ private fun LoginSection(navController: NavController , response: ForgetPassword
     Button(
         modifier = Modifier
             .fillMaxWidth()
-            .height(MaterialTheme.dimens.medium3),
+            .height(50.dp),
         onClick = {
             errorPassword=""
             errorRepeatPassword=""
@@ -188,10 +188,10 @@ private fun LoginSection(navController: NavController , response: ForgetPassword
 
         },
         colors = ButtonDefaults.buttonColors(
-            containerColor = if (isSystemInDarkTheme()) BlueGray else Black,
+            containerColor = if (isSystemInDarkTheme()) BlueGray else Color(0xFFFF5722),
             contentColor = Color.White
         ),
-        shape = RoundedCornerShape(size = 4.dp)
+        shape = RoundedCornerShape(size = 35.dp)
     ) {
         Text(
             text = "Confirm",
@@ -210,52 +210,51 @@ fun passwordValidationFP(password: String): Boolean {
     return password.matches(passwordRegex.toRegex())
 }
 
-
 @Composable
 private fun TopSection() {
     val uiColor = if (isSystemInDarkTheme()) Color.White else Black
     val screenHeight = LocalConfiguration.current.screenHeightDp
+    val logoHeight = (screenHeight / 4.5).dp // Adjust the logo size proportionally
+
     Box(
-        contentAlignment = Alignment.TopCenter
+        modifier = Modifier
+            .fillMaxWidth()
+        // Adjust top padding for spacing
     ) {
+        // Top-right corner shape
         Image(
             modifier = Modifier
-                .fillMaxWidth()
-                .height((screenHeight / 2.12).dp),
-            painter = painterResource(id = R.drawable.shape),
+                .size(180.dp) // Adjust size as necessary
+                .align(Alignment.TopEnd)
+                .padding(top = 0.dp, start = 28.dp), // Add padding to position the shape
+            painter = painterResource(id = R.drawable.shape), // Replace with your shape resource ID
             contentDescription = null,
-            contentScale = ContentScale.FillBounds
+            contentScale = ContentScale.Fit
         )
 
-
-        Row(
-            modifier = Modifier.padding(top = (screenHeight / 9).dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
-            Icon(
-                modifier = Modifier.size(MaterialTheme.dimens.logoSize),
-                painter = painterResource(id = R.drawable.logo),
-                contentDescription = stringResource(id = R.string.app_logo),
-                tint = uiColor
-            )
-            Spacer(modifier = Modifier.width(MaterialTheme.dimens.small2))
-            Column {
-                Text(
-                    text = stringResource(id = R.string.recetta),
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = uiColor
-                )
-            }
-        }
-
-        Text(
+        // Logo in the center
+        Column(
             modifier = Modifier
-                .padding(bottom = 10.dp)
-                .align(alignment = Alignment.BottomCenter),
-            text = stringResource(id = R.string.writecode),
-            style = MaterialTheme.typography.headlineLarge,
-            color = uiColor
-        )
+                .fillMaxWidth()
+                .padding(top = 120.dp), // Adjust spacing below the shape
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Image(
+                modifier = Modifier
+                    .fillMaxWidth(0.8f) // Restrict the width for better proportions
+                    .height(logoHeight) // Set logo height
+                    .padding(bottom = 16.dp), // Add bottom padding for better spacing
+                painter = painterResource(id = R.drawable.newlogo),
+                contentDescription = null,
+                contentScale = ContentScale.Fit // Ensure the image retains proportions
+            )
+
+            Text(
+                text = stringResource(id = R.string.sigintoyouraccount),
+                style = MaterialTheme.typography.headlineLarge,
+                color = uiColor,
+                modifier = Modifier.padding(top = 16.dp) // Adjust top padding
+            )
+        }
     }
 }
