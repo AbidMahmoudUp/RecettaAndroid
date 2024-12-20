@@ -61,6 +61,9 @@ import Trnity.ITP.Recetta.ui.theme.dimens
 import android.content.ContentResolver
 import android.provider.MediaStore
 import android.util.Log
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.viewModelScope
 import coil.compose.AsyncImage
 import com.google.gson.Gson
@@ -81,11 +84,13 @@ fun EditProfileScreen(navController: NavController , userData : UpdateUserDto) {
     var updatedEmail by remember { mutableStateOf(userData.email) }
     var updatedPhoneNumber by remember { mutableStateOf(userData.phone) }
     var updatedUserName by remember { mutableStateOf(userData.name) }
+    val scrollState = rememberScrollState()
     Surface {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color(0xFFFFFFFF))
+                .verticalScroll(scrollState)
                 .padding(16.dp), Arrangement.Top, Alignment.CenterHorizontally
         ) {
             var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
@@ -396,7 +401,7 @@ fun OptionsSection( accT: String,userData: UpdateUserDto,
 
                     Row {
                         Text(
-                            modifier = Modifier.padding(start = 300.dp)
+                            modifier = Modifier
                                 .clickable {
                                     errorPassword = ""
                                     errorRepeatPassword = ""
@@ -429,6 +434,7 @@ fun OptionsSection( accT: String,userData: UpdateUserDto,
                             text = "Next",
                             color = Color.Blue,
                             fontSize = 18.sp,
+                            textAlign = TextAlign.Center,
                             textDecoration = TextDecoration.Underline
                         )
                     }
@@ -663,12 +669,12 @@ fun EditedProfileSection( navController: NavController , newUserName: String ,pr
 
                 if (prof_img != null) {
                     AsyncImage(
-                        model = ("http://10.0.2.2:3000/uploads/"+prof_img),
+                        model = ("http://192.168.43.232:3000/uploads/"+prof_img),
                         contentDescription = "Profile Picture",
                         modifier = Modifier.fillMaxSize().align(Alignment.Center),
                         contentScale = ContentScale.Crop,
                     )
-                    Log.d("message String " , "http://10.0.2.2:3000/uploads/"+prof_img)
+                    Log.d("message String " , "http://192.168.43.232:3000/uploads/"+prof_img)
                 } else {
                     // Placeholder image when no profile image is found
                     Image(
