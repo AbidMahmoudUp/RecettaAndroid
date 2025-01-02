@@ -7,6 +7,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -17,9 +18,12 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.booleanResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -54,6 +58,8 @@ private fun passwordTextField(label: String, trailing: Int,passwordVisibility :B
 
     val uiColor = if (isSystemInDarkTheme()) Color.White else Black
 
+    val focusManager = LocalFocusManager.current
+
     TextField(
         modifier = Modifier.fillMaxWidth()
             .border(
@@ -63,6 +69,9 @@ private fun passwordTextField(label: String, trailing: Int,passwordVisibility :B
             )
            ,
         value = value,
+        maxLines = 1,
+     //   keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+
         onValueChange = onValueChange,
         label = {
             Text(
@@ -87,7 +96,11 @@ private fun passwordTextField(label: String, trailing: Int,passwordVisibility :B
 
         visualTransformation = if(passwordVisibility) VisualTransformation.None else
             PasswordVisualTransformation(),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
+        keyboardActions = KeyboardActions(
+            onDone = {
+                focusManager.clearFocus(true)
+            })
     )
 }
 
@@ -95,6 +108,7 @@ private fun passwordTextField(label: String, trailing: Int,passwordVisibility :B
 @OptIn(ExperimentalMaterial3Api::class)
 private fun normalTextField(label: String, trailing: Int ,value: String,error : Boolean,
                             onValueChange: (String) -> Unit) {
+    val focusManager = LocalFocusManager.current
 
     val uiColor = if (isSystemInDarkTheme()) Color.White else Black
 
@@ -108,6 +122,13 @@ private fun normalTextField(label: String, trailing: Int ,value: String,error : 
         ,
         value = value,
         onValueChange = onValueChange,
+        maxLines = 1,
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+        keyboardActions = KeyboardActions(
+            onNext = {
+                focusManager.moveFocus(FocusDirection.Down)
+            }
+        ),
         label = {
             Text(
                 text = label,

@@ -669,7 +669,7 @@ fun EditedProfileSection( navController: NavController , newUserName: String ,pr
 
                 if (prof_img != null) {
                     AsyncImage(
-                        model = ("http://192.168.43.232:3000/uploads/"+prof_img),
+                        model = ("http://192.168.1.17:3000/uploads/"+prof_img),
                         contentDescription = "Profile Picture",
                         modifier = Modifier.fillMaxSize().align(Alignment.Center),
                         contentScale = ContentScale.Crop,

@@ -53,7 +53,7 @@ fun RecipeIngredientCard ( recipeIngredient: IngredientRecipe){
 
                 image = imageFile.replace(" " , "+")
             }
-            AsyncImage("http://192.168.43.232:3000/uploads/"+ image , contentDescription = "Test" ,
+            AsyncImage("http://192.168.1.17:3000/uploads/"+ image , contentDescription = "Test" ,
                 Modifier
                     .padding(0.dp)
                     .size(70.dp))

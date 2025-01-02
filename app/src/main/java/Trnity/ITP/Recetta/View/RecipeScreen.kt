@@ -156,7 +156,7 @@ fun ParallaxToolbar(
     isFavorite: Boolean,
     onFavoriteClick: (Boolean) -> Unit
 ) {
-    val directImageUrl = "http://192.168.43.232:3000/uploads/"
+    val directImageUrl = "http://192.168.1.17:3000/uploads/"
     val imageHeight = AppBarExpendedHeight - AppBarCollapsedHeight
     val maxOffset = with(LocalDensity.current) { imageHeight.roundToPx() }
     val offset = min(scrollState.firstVisibleItemScrollOffset, maxOffset)

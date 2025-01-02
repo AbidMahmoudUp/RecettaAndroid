@@ -203,7 +203,7 @@ fun SingleItemFavCard(navController: NavController,favorite: RecipeEntity, onHea
                 tint = Color(0xFFF96115)
             )
         }
-        val directImageUrl = "http://192.168.43.232:3000/uploads/"
+        val directImageUrl = "http://192.168.1.17:3000/uploads/"
 
         AsyncImage(
             model = directImageUrl + favorite.imageRecipe , // Replace with dynamic image URL if needed
