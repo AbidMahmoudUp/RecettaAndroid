@@ -173,7 +173,7 @@ fun OptionsSection( accT: String,userData: UpdateUserDto,
 
 
 
-                Spacer(modifier = Modifier.width(186.dp))
+                Spacer(modifier = Modifier.width(140.dp))
                 Icon(
                     painter = painterResource(id =if (!newEmailTF) R.drawable.arrow_forward_r else R.drawable.arrow_down_r ),
                     contentDescription = "forward arrow",
@@ -226,7 +226,7 @@ fun OptionsSection( accT: String,userData: UpdateUserDto,
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp
                 )
-                Spacer(modifier = Modifier.width(107.dp))
+                Spacer(modifier = Modifier.width(55.dp))
 
                 Icon(
                     painter = painterResource(id =if (!newPhoneNumberTF) R.drawable.arrow_forward_r else R.drawable.arrow_down_r ),
@@ -280,7 +280,7 @@ fun OptionsSection( accT: String,userData: UpdateUserDto,
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp
                 )
-                Spacer(modifier = Modifier.width(80.dp))
+                Spacer(modifier = Modifier.width(33.dp))
 
                 Icon(
                     painter = painterResource(id =if (!changePasswordTF) R.drawable.arrow_forward_r else R.drawable.arrow_down_r ),

@@ -39,7 +39,7 @@ fun BottomNavigationBar(navController: NavController, onHeightChange: (Float) ->
                 onClick = {
                     if(currentRoute == "home"){
                         navController.navigate(item.route) {
-                            popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                            popUpTo(navController.graph.startDestinationId) { saveState = true }
                             launchSingleTop = true
                             restoreState = true
                         }
