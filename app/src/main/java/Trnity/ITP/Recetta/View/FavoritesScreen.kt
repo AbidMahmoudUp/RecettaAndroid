@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
@@ -94,15 +95,10 @@ fun CardsList(navController: NavController,favorites: List<RecipeEntity>, recipe
     Column(modifier = Modifier
         .safeDrawingPadding()
         .padding(bottom = 84.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = { }) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Back",
-                    tint = Color(0xFF039be5)
-                )
-            }
-            Text(text = "Favorite List")
+        Row(verticalAlignment = Alignment.CenterVertically , modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Start) {
+
+            Text(text = "Favorite List" , modifier =Modifier.offset(x= 10.dp , y = 10.dp) )
         }
 
         // Category buttons (you can keep this logic as it is)

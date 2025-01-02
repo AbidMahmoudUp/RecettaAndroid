@@ -28,8 +28,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
@@ -148,46 +150,43 @@ private fun emptyScreen(context: Context, navController: NavController) {
     }
 }
 
-
 @Composable
 private fun profileSettingsSection(
     context: Context,
     navController: NavController,
-    userData  : UpdateUserDto,
+    userData: UpdateUserDto,
     data: String
 ) {
     var changePassword by remember { mutableStateOf(false) }
     Surface {
+        // Use a Scrollable Modifier
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color(0xFFFFFFFF))
-                .padding(16.dp), Arrangement.Top, Alignment.CenterHorizontally
+                .verticalScroll(rememberScrollState()) // Enables scrolling
+                .padding(16.dp , bottom = 84.dp),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
-            ProfileSection(userData , navController)
+            ProfileSection(userData, navController)
             Spacer(modifier = Modifier.height(40.dp))
             OptionsSection1(navController)
             Spacer(modifier = Modifier.height(40.dp))
             LogoutSection(context, navController)
             Spacer(modifier = Modifier.height(20.dp))
-            DeleteAccountSection(data , navController , context)
-
-
-//            Text(data?.userId.toString())
+            DeleteAccountSection(data, navController, context)
             Spacer(modifier = Modifier.height(5.dp))
-
             Text(
                 text = "App version 1.0.0 (release)",
                 color = if (isSystemInDarkTheme()) Color.White else Color.Black,
-                modifier = Modifier ,
+                modifier = Modifier,
                 fontSize = 15.sp
-
             )
-
         }
     }
 }
+
 
 @Composable
 private fun DeleteAccountSection(data: String, navController: NavController, context: Context) {
@@ -461,7 +460,7 @@ fun LogoutSection(context: Context, navController: NavController) {
             Row(verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.fillMaxWidth()
-                    .padding(top = 10.dp ,bottom = 10.dp)
+                    .padding(top = 10.dp )
             ) {
                 Box(
                     modifier = Modifier
