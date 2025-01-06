@@ -526,13 +526,13 @@ fun ProfileSection(userData: UpdateUserDto, navController: NavController) {
         ) {
             if (imageUrl.isNotEmpty()) {
                 AsyncImage(
-                    model = ("http://192.168.1.17:3000/uploads/"+userData.profileImage),
+                    model = ("http://192.168.43.232:3000/uploads/"+userData.profileImage),
                     contentDescription = "Profile Picture",
                     modifier = Modifier.fillMaxSize().align(Alignment.Center),
                     contentScale = ContentScale.Crop,
                 )
-                Log.d("message String " , "http://192.168.43.232:3000/uploads/"+imageUrl)
-                Log.d("message String " , "http://192.168.43.232:3000/uploads/"+userData.profileImage)
+         //       Log.d("message String " , "http://192.168.43.232:3000/uploads/"+imageUrl)
+         //       Log.d("message String " , "http://192.168.43.232:3000/uploads/"+userData.profileImage)
             } else {
                 // Placeholder image when no profile image is found
                 Image(

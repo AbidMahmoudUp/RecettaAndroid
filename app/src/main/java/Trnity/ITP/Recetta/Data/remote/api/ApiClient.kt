@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit
 
 
 object ApiClient {
-    private const val BASE_URL = "http://192.168.1.17:3000/api/"
+    private const val BASE_URL = "http://192.168.43.232:3000/api/"
 
     fun <T> create(service: Class<T>): T {
         val client: OkHttpClient = OkHttpClient.Builder()

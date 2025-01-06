@@ -68,7 +68,6 @@ fun navigationTitle(navController : NavController , title : String ){
         modifier = Modifier.padding(start = 8.dp)
     )
 }}
-@SuppressLint("UnrememberedMutableInteractionSource")
 @Composable
 fun AddIngredient(navController: NavController, inventoryViewModel: InventoryViewModel = hiltViewModel(), ingredientViewModel: IngredientViewModel = hiltViewModel()) {
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
@@ -82,6 +81,8 @@ fun AddIngredient(navController: NavController, inventoryViewModel: InventoryVie
     val isSaveButtonVisible by remember {
         derivedStateOf { listIngredientQte.isNotEmpty() }
     }
+  //  val currentCategoryState = listIngredientQte.getOrPut(selectedCategory) { mutableSetOf() }
+
     val preferences = LocalContext.current.getSharedPreferences("checkbox", Context.MODE_PRIVATE)
     val userId = preferences.getString("userId", "").toString()
 
@@ -100,12 +101,12 @@ fun AddIngredient(navController: NavController, inventoryViewModel: InventoryVie
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
-            .clickable(
+     /*       .clickable(
                 interactionSource = MutableInteractionSource(),
                 indication = null
             ) {
                 focusManager.clearFocus() // Clear focus when tapping outside
-            }
+            }*/
     ) {
         // Top Row: Back button and title
         Row(
@@ -163,10 +164,20 @@ fun AddIngredient(navController: NavController, inventoryViewModel: InventoryVie
                 horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(categories.size) { index ->
                     val category = categories[index]
+                    val imageResId = when (category) {
+                        "All" -> R.drawable.apps  // Map to apps.xml
+                        "Fruit" -> R.drawable.nutrition  // Map to nutrution.xml
+                        "Vegetables" -> R.drawable.vegtable  // Existing image for vegetables
+                        "Meat" -> R.drawable.kebab_dining  // Map to kebab_dining.xml
+                        "Spices" -> R.drawable.salinity  // Map to salinity.xml
+                        else -> R.drawable.apps  // Default image if needed
+                    }
+
                     CategoryTab(
                         text = category,
                         isSelected = category == selectedCategory,
-                        onClick = { selectedCategory = category } // update code here: category change
+                        onClick = { selectedCategory = category },
+                        imageResId = imageResId // Pass the mapped image resource
                     )
                 }
             }
@@ -193,7 +204,7 @@ fun AddIngredient(navController: NavController, inventoryViewModel: InventoryVie
 
 @SuppressLint("UnrememberedMutableInteractionSource")
 @Composable
-fun CategoryTab(text: String, isSelected: Boolean, onClick: () -> Unit) {
+fun CategoryTab(text: String, isSelected: Boolean, onClick: () -> Unit,imageResId: Int) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
@@ -212,7 +223,7 @@ fun CategoryTab(text: String, isSelected: Boolean, onClick: () -> Unit) {
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                painter = painterResource(id = R.drawable.vegtableicon),
+                painter = painterResource(id = imageResId),
                 contentDescription = null,
                 tint = if (isSelected) Color.White else Color(0xFFFC610F),
                 modifier = Modifier.size(32.dp)
@@ -228,11 +239,11 @@ fun CategoryTab(text: String, isSelected: Boolean, onClick: () -> Unit) {
         )
     }
 }
-@SuppressLint("SuspiciousIndentation")
+@SuppressLint("SuspiciousIndentation", "UnrememberedMutableState")
 @Composable
 fun FoodCard(ingredient: Ingredient , listOfIngredients :MutableSet<IngredientRecipe> = mutableSetOf<IngredientRecipe>() ,  onIngredientsUpdated: (MutableSet<IngredientRecipe>) -> Unit) {
     val currentIngredientRecipe = listOfIngredients.find { it.ingredient == ingredient }
-    var count by remember { mutableStateOf(currentIngredientRecipe?.qte ?: 0) }
+    var count = mutableStateOf(currentIngredientRecipe?.qte ?: 0)
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -287,7 +298,7 @@ fun FoodCard(ingredient: Ingredient , listOfIngredients :MutableSet<IngredientRe
                     .offset(x = 8.dp, y = 8.dp)
                     .animateContentSize()
             ) {
-                AnimatedVisibility(visible = count > 0) {
+                AnimatedVisibility(visible = count.value > 0) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
@@ -300,11 +311,11 @@ fun FoodCard(ingredient: Ingredient , listOfIngredients :MutableSet<IngredientRe
                     ) {
                         IconButton(
                             onClick = {
-                                if (count > 0) {
-                                    count--
+                                if (count.value > 0) {
+                                    count.value--
                                     val updatedList = listOfIngredients.toMutableSet()
-                                    if (count > 0) {
-                                        updatedList.add(IngredientRecipe(ingredient, count))
+                                    if (count.value > 0) {
+                                        updatedList.add(IngredientRecipe(ingredient, count.value))
                                     } else {
                                         updatedList.removeIf { it.ingredient == ingredient }
                                     }
@@ -326,7 +337,7 @@ fun FoodCard(ingredient: Ingredient , listOfIngredients :MutableSet<IngredientRe
                         }
                         Spacer(Modifier.height(7.dp))
                         Text(
-                            text = "$count",
+                            text = "${count.value}",
                             style = MaterialTheme.typography.bodyLarge,
                             fontSize = 16.sp,
                             color = Color.White,
@@ -342,25 +353,25 @@ fun FoodCard(ingredient: Ingredient , listOfIngredients :MutableSet<IngredientRe
 
 
                     IconButton(
-                        onClick = { count++
+                        onClick = { count.value++
 
                             val updatedList = listOfIngredients.toMutableSet()
-                            var index = updatedList.indexOf(IngredientRecipe(ingredient, count))
+                            var index = updatedList.indexOf(IngredientRecipe(ingredient, count.value))
                             if(index != -1)
                             {
-                                updatedList.elementAt(index).qte = count
+                                updatedList.elementAt(index).qte = count.value
                             }
                             else{
-                                updatedList.add(IngredientRecipe(ingredient, count))
+                                updatedList.add(IngredientRecipe(ingredient, count.value))
                                 onIngredientsUpdated(updatedList)
 
                             }
 
-                                  },
+                        },
                         modifier = Modifier
                             .background(
                                 color = Color(0xFFFF5722),
-                                shape = if (count <= 0) RoundedCornerShape(8.dp) else RectangleShape
+                                shape = if (count.value <= 0) RoundedCornerShape(8.dp) else RectangleShape
                             )
                             .padding(4.dp)
                             .size(24.dp)
@@ -380,7 +391,9 @@ fun FoodCard(ingredient: Ingredient , listOfIngredients :MutableSet<IngredientRe
 }
 
 @Composable
-fun CardGridExample(ingredients:List<Ingredient> , listOfIngredients: MutableSet<IngredientRecipe>,onIngredientsUpdated: (MutableSet<IngredientRecipe>) -> Unit) {
+fun CardGridExample(ingredients:List<Ingredient>
+                    , listOfIngredients: MutableSet<IngredientRecipe>,
+                    onIngredientsUpdated: (MutableSet<IngredientRecipe>) -> Unit) {
 
     if(ingredients.isEmpty()){
         noSearchResult()

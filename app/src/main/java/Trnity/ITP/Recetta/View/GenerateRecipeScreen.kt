@@ -14,9 +14,11 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.ui.util.lerp
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -45,6 +47,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -84,9 +87,6 @@ fun GenerateRecipeScreen(navController: NavController,recipeViewModel : RecipeVi
         derivedStateOf { listIngredientQte.isNotEmpty() }
     }
 
-    fun doesMatchSearchQuery(ingredientName: String, query: String): Boolean {
-        return ingredientName.contains(query, ignoreCase = true)
-    }
 
 
     // if the loading is done let s navigate to the generation list root
@@ -152,6 +152,7 @@ fun GenerateRecipeScreen(navController: NavController,recipeViewModel : RecipeVi
 
 
 
+@SuppressLint("UnrememberedMutableInteractionSource")
 @Composable
 fun GenerateRecipeContent(
     navController: NavController,
@@ -159,10 +160,13 @@ fun GenerateRecipeContent(
     listIngredientQte: MutableSet<IngredientRecipe>,
     onIngredientsUpdated: (Set<IngredientRecipe>) -> Unit,
     onGenerateClick: () -> Unit,
+
     saveButton : Boolean
 ) {
     val ingredients by ingredientViewModel.ingredients.collectAsState()
     val categories = listOf("All", "Fruit", "Vegetables", "Meat", "Nuts")
+    val focusManager = LocalFocusManager.current
+
     var selectedCategory by remember { mutableStateOf("All") }
     var searchText by remember { mutableStateOf("") }
    // var listIngredientQte by remember { mutableStateOf(mutableSetOf<IngredientRecipe>()) }
@@ -172,6 +176,12 @@ fun GenerateRecipeContent(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
+            .clickable(
+                interactionSource = MutableInteractionSource(),
+                indication = null
+            ) {
+                focusManager.clearFocus() // Clear focus when tapping outside
+            }
     ) {
         // Top Row: Back button and title
         Row(
@@ -179,7 +189,7 @@ fun GenerateRecipeContent(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Generate Recipe")
+            Text("Generate Recipe" , fontWeight = FontWeight.Bold)
             if (saveButton) {
                 val infiniteTransition = rememberInfiniteTransition(label = "infinite transition")
 
@@ -208,20 +218,35 @@ fun GenerateRecipeContent(
         ) {
             OutlinedTextField(
                 value = searchText,
+                maxLines = 1,
                 onValueChange = { newText -> searchText = newText },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp),
-                shape = RoundedCornerShape(12.dp),
-                label = { Text("Search") },
+                shape = RoundedCornerShape(24.dp),
+                label = { Text(text="Search",  color = Color.Black, modifier =Modifier.background(Color.Transparent)) },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Search,
-                        contentDescription = null
+                        contentDescription = null,
+                        tint = Color.Black
                     )
-                }
+                },
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    disabledContainerColor = Color.Transparent,
+                    focusedTextColor = Color.Black,
+                    unfocusedTextColor = Color.Black,
+                    disabledTextColor = Color.Gray,
+                    focusedLabelColor = Color(0xFFF46D42),
+                    unfocusedLabelColor = Color.Black,
+                    focusedIndicatorColor = Color(0xFFF46D42),
+                    unfocusedIndicatorColor = Color.Black,
+                    disabledIndicatorColor = Color.Gray,
+                    cursorColor = Color(0xFFF46D42)
+                )
             )
-
             Text(
                 "Categories",
                 modifier = Modifier.align(Alignment.Start),
@@ -235,18 +260,32 @@ fun GenerateRecipeContent(
             ) {
                 items(categories.size) { index ->
                     val category = categories[index]
+                    val imageResId = when (category) {
+                        "All" -> R.drawable.apps  // Map to apps.xml
+                        "Fruit" -> R.drawable.nutrition  // Map to nutrution.xml
+                        "Vegetables" -> R.drawable.vegtable  // Existing image for vegetables
+                        "Meat" -> R.drawable.kebab_dining  // Map to kebab_dining.xml
+                        "Spices" -> R.drawable.salinity  // Map to salinity.xml
+                        else -> R.drawable.apps  // Default image if needed
+                    }
                     CategoryTab(
                         text = category,
                         isSelected = category == selectedCategory,
-                        onClick = { selectedCategory = category }
+                        onClick = { selectedCategory = category },
+                        imageResId = imageResId
                     )
                 }
             }
 
             val filteredIngredients = ingredients.filter { ingredient ->
-                ingredient.name.contains(searchText, ignoreCase = true)
-            }
+                fun doesMatchSearchQuery(ingredientName: String, query: String): Boolean {
+                    return ingredientName.contains(query, ignoreCase = true)
+                }
 
+                // Filter based on category
+                (selectedCategory == "All" || ingredient.categorie == selectedCategory) &&
+                        doesMatchSearchQuery(ingredient.name, searchText)
+            }
             CardGridExample(
                 ingredients = filteredIngredients,
                 listOfIngredients = listIngredientQte.toMutableSet(),

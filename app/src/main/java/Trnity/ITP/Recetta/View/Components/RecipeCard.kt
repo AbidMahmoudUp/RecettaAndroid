@@ -37,7 +37,7 @@ import java.nio.charset.StandardCharsets
 fun RecipeCardWithImage(navController: NavController, recipe : Recipe) {
     println("RecipeCardWithImage: recipe = $recipe")
 
-    val directImageUrl = "http://192.168.1.17:3000/uploads/"
+    val directImageUrl = "http://192.168.43.232:3000/uploads/"
 
 fun navigateToDetails(recipe: Recipe) {
     val jsonRecipe = Gson().toJson(recipe) // Serialize the Recipe object to JSON

@@ -156,7 +156,7 @@ fun ParallaxToolbar(
     isFavorite: Boolean,
     onFavoriteClick: (Boolean) -> Unit
 ) {
-    val directImageUrl = "http://192.168.1.17:3000/uploads/"
+    val directImageUrl = "http://192.168.43.232:3000/uploads/"
     val imageHeight = AppBarExpendedHeight - AppBarCollapsedHeight
     val maxOffset = with(LocalDensity.current) { imageHeight.roundToPx() }
     val offset = min(scrollState.firstVisibleItemScrollOffset, maxOffset)
@@ -240,13 +240,7 @@ fun ParallaxToolbar(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = { /* Action */ }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_arrow_back),
-                        contentDescription = null,
-                        tint = Gray
-                    )
-                }
+
 
                 // Title centered in the middle
                 Text(

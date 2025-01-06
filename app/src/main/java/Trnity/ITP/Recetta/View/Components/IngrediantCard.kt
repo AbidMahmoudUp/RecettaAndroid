@@ -58,7 +58,7 @@ fun IngrediantInventoryCard(
     )
  {
         AsyncImage(
-            model = "http://192.168.1.17:3000/uploads/" + ingredient.ingredient.image,
+            model = "http://192.168.43.232:3000/uploads/" + ingredient.ingredient.image,
             contentDescription = "Ingredient Image",
             modifier = Modifier
                 .padding(12.dp)

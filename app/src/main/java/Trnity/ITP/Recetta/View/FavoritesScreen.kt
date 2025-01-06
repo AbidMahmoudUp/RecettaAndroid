@@ -6,12 +6,9 @@ import Trnity.ITP.Recetta.Model.entities.Recipe
 import Trnity.ITP.Recetta.R
 import Trnity.ITP.Recetta.ViewModel.RecipeViewModel
 import android.annotation.SuppressLint
-import android.os.Bundle
 import android.util.Log
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -19,7 +16,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
@@ -30,7 +26,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.KeyboardArrowRight
 import androidx.compose.material3.AlertDialog
@@ -40,7 +36,9 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -52,9 +50,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
+//import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -65,8 +64,8 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
 
-@Composable
-fun Dp.dpToPx() = with(LocalDensity.current) { this@dpToPx.toPx() }
+//@Composable
+//fun Dp.dpToPx() = with(LocalDensity.current) { this@dpToPx.toPx() }
 
 
 @Composable
@@ -87,50 +86,113 @@ fun FavoriteScreen(navController: NavController, recipeViewModel: RecipeViewMode
 }
 
 
-
+@SuppressLint("UnrememberedMutableInteractionSource")
 @Composable
-fun CardsList(navController: NavController,favorites: List<RecipeEntity>, recipeViewModel: RecipeViewModel) {
-    val categories = arrayOf("Meals", "Drinks", "Breakfast", "Launch", "Dinner")
+fun CardsList(navController: NavController, favorites: List<RecipeEntity>, recipeViewModel: RecipeViewModel) {
+    val categories = arrayOf("All", "Meals", "Drinks", "Breakfast", "Lunch", "Dinner")
+    var selectedCategory by remember { mutableStateOf("All") }
+    val focusManager = LocalFocusManager.current
+    var searchText by remember { mutableStateOf("") }
 
-    Column(modifier = Modifier
-        .safeDrawingPadding()
-        .padding(bottom = 84.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically , modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Start) {
+    val filteredFavorites = favorites.filter { recipe ->
+        (selectedCategory == "All" || recipe.category == selectedCategory) &&
+                (searchText.isEmpty() || recipe.title.contains(searchText, ignoreCase = true))
+    }
 
-            Text(text = "Favorite List" , modifier =Modifier.offset(x= 10.dp , y = 10.dp) )
+    Column(
+        modifier = Modifier
+            .safeDrawingPadding()
+            .padding(start = 16.dp,top = 16.dp , end = 16.dp,bottom = 84.dp)
+            .clickable(
+                interactionSource = MutableInteractionSource(),
+                indication = null
+            ) {
+                focusManager.clearFocus()
+            }
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Start
+        ) {
+            Text(text = "Favorite List",
+                fontWeight = FontWeight.Bold
+                )
         }
-
-        // Category buttons (you can keep this logic as it is)
-
-        if(favorites.isEmpty())
-        {
-            noIngrediantSection(image = R.drawable.dish , title = "\"Oops, No Favorites Found!\"" , description="Your favorites list is empty for now.\n Head over to the recipes section,\n find dishes you love, and add them to your \n favorites to access them anytime!\"" )
-        }
-        else{
-        LazyRow(modifier = Modifier
-            .wrapContentSize()
-            .padding(8.dp)) {
-            items(categories.size) {
-                Button(onClick = {}, modifier = Modifier.padding(horizontal = 4.dp), colors = ButtonDefaults.buttonColors(Color(0xFFEDE7F3)), shape = RoundedCornerShape(8.dp)) {
-                    Text(text = categories[it], color = Color.Black, fontWeight = FontWeight.Light, fontSize = 10.sp)
+        OutlinedTextField(
+            value = searchText,
+            maxLines = 1,
+            onValueChange = { newText -> searchText = newText },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            shape = RoundedCornerShape(24.dp),
+            label = { Text(text="Search",  color = Color.Black, modifier =Modifier.background(Color.Transparent)) },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = null,
+                    tint = Color.Black
+                )
+            },
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent,
+                disabledContainerColor = Color.Transparent,
+                focusedTextColor = Color.Black,
+                unfocusedTextColor = Color.Black,
+                disabledTextColor = Color.Gray,
+                focusedLabelColor = Color(0xFFF46D42),
+                unfocusedLabelColor = Color.Black,
+                focusedIndicatorColor = Color(0xFFF46D42),
+                unfocusedIndicatorColor = Color.Black,
+                disabledIndicatorColor = Color.Gray,
+                cursorColor = Color(0xFFF46D42)
+            )
+        )
+        LazyRow(
+            modifier = Modifier
+                .wrapContentSize()
+                .padding(8.dp)
+        ) {
+            items(categories.size) { index ->
+                Button(
+                    onClick = { selectedCategory = categories[index] },
+                    modifier = Modifier.padding(horizontal = 4.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        if (categories[index] == selectedCategory) Color(0xFFF96115) else Color(0xFFEDE7F3)
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = categories[index],
+                        color = if (categories[index] == selectedCategory) Color.White else Color.Black,
+                        fontWeight = if (categories[index] == selectedCategory) FontWeight.Bold else FontWeight.Light,
+                        fontSize = 10.sp
+                    )
                 }
             }
         }
 
-        // Displaying favorites from Room database
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            items(favorites.size) { index ->
-                CardItemFavorite(navController = navController,favorites[index], recipeViewModel) // Pass recipeViewModel here
+        if (filteredFavorites.isEmpty()) {
+            noIngrediantSection(
+                image = R.drawable.dish,
+                title = "\"Oops, No Favorites Found!\"",
+                description = "Your favorites list is empty for now.\n Head over to the recipes section,\n find dishes you love, and add them to your \n favorites to access them anytime!"
+            )
+        } else {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(filteredFavorites.size) { index ->
+                    CardItemFavorite(navController = navController, filteredFavorites[index], recipeViewModel)
+                }
             }
-        }
         }
     }
 }

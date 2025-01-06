@@ -119,7 +119,7 @@ fun InventoryScreen(
             verticalAlignment = Alignment.CenterVertically,
         ) {
 
-            Text(text = if (isSelectionMode) "Select Items" else "Food Manager")
+            Text(text = if (isSelectionMode) "Select Items" else "Food Manager" , fontWeight = FontWeight.Bold)
             
             Spacer(modifier = Modifier.width(130.dp))
             IconButton(onClick = {
@@ -215,7 +215,7 @@ fun InventoryScreen(
                             isSelectionMode = isSelectionMode,
                             quantity = quantity,
                             onLongClick = {
-                                selectedIngredients[ingredient] = 0 // Initialize quantity
+                                selectedIngredients[ingredient] = 1 // Initialize quantity
                                 setSelectionMode(true) // Enter selection mode
                             },
                             onIncrement = {
